@@ -197,7 +197,7 @@
             <i class="fa-solid fa-key text-xl text-zinc-300"></i>
             <div>
               <div class="font-semibold">TMDB API Key</div>
-              <div class="text-xs text-zinc-500">For movie & TV search & availability</div>
+              <div class="text-xs text-zinc-500">API key is securely stored server-side (no longer needed in the browser)</div>
             </div>
           </div>
           <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
@@ -580,7 +580,7 @@
       const onlyMine = document.getElementById('discover-my-services')?.checked;
 
       const sortValue = document.getElementById('discover-sort')?.value || 'popularity.desc';
-      let url = `https://api.themoviedb.org/3/discover/${currentDiscoverType}?api_key=${apiKey}&language=en-US&sort_by=${sortValue}&include_adult=false&watch_region=US&page=${currentDiscoverPage}`;
+      let url = `/api/tmdb/3/discover/${currentDiscoverType}?language=en-US&sort_by=${sortValue}&include_adult=false&watch_region=US&page=${currentDiscoverPage}`;
       if (genreIds.length > 0) {
         url += `&with_genres=${genreIds.join(',')}`;
       }
@@ -622,8 +622,8 @@
           const mediaPath = isMovie ? 'movie' : 'tv';
           try {
             const [provRes, extRes] = await Promise.all([
-              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/watch/providers?api_key=${apiKey}`),
-              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/external_ids?api_key=${apiKey}`)
+              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/watch/providers`),
+              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/external_ids`)
             ]);
             const providers = (await provRes.json()).results?.US || null;
             const external = await extRes.json();
@@ -774,7 +774,7 @@
 
       try {
         // Fetch richer details
-        const detailRes = await fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}?api_key=${loadTMDBKey()}`);
+        const detailRes = await fetch(`/api/tmdb/3/${mediaPath}/${item.id}`);
         const detail = await detailRes.json();
 
         metaEl.innerHTML = `
@@ -875,7 +875,7 @@
       const status = document.getElementById('tmdb-save-status');
       if (status) status.textContent = 'Testing...';
       try {
-        const res = await fetch(`https://api.themoviedb.org/3/configuration?api_key=${key}`);
+        const res = await fetch(`/api/tmdb/3/configuration`);
         const data = await res.json();
         if (data.success === false) {
           if (status) status.textContent = 'Invalid key';
@@ -938,7 +938,7 @@
       const mediaPath = isMovie ? 'movie' : 'tv';
 
       try {
-        const searchRes = await fetch(`https://api.themoviedb.org/3/search/${searchEndpoint}?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+        const searchRes = await fetch(`/api/tmdb/3/search/${searchEndpoint}?query=${encodeURIComponent(query)}`);
         const searchData = await searchRes.json();
 
         if (searchData.success === false) {
@@ -959,8 +959,8 @@
         const enriched = await Promise.all(top.map(async item => {
           try {
             const [provRes, extRes] = await Promise.all([
-              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/watch/providers?api_key=${apiKey}`),
-              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/external_ids?api_key=${apiKey}`)
+              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/watch/providers`),
+              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/external_ids`)
             ]);
             const providers = (await provRes.json()).results?.US || null;
             const external = await extRes.json();

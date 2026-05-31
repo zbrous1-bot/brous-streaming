@@ -17,17 +17,11 @@
 
 ## Getting Started
 
-1. Open the app
-2. Expand **TMDB API Key** and paste your free API key
-3. Check the services you subscribe to in **My Services**
-4. Start searching or using Discover
+1. Open the app using the password-protected Worker URL
+2. Check the services you subscribe to in **My Services**
+3. Start searching or using Discover
 
-### Getting a TMDB API Key (Free)
-
-1. Go to [themoviedb.org](https://www.themoviedb.org)
-2. Create a free account
-3. Go to Settings → API → Request an API Key (v3)
-4. Copy the key and paste it into the app
+**Note:** The TMDB API key is now stored securely in a Cloudflare Worker (not exposed in the browser). You no longer need to enter it in the app.
 
 ## Self-Hosting / Deployment
 
