@@ -1,29 +1,59 @@
-# Roki — Ready to Use
+# Brous
 
-This version is focused on **searching and finding where to watch** movies & TV shows.
+**Brous** is a clean, mobile-first web app for discovering where to watch movies and TV shows across your subscribed services.
 
-## Quick Start (Recommended)
+**Live Demo:** [https://brous-streaming.pages.dev/](https://brous-streaming.pages.dev/)
 
-1. Go to **https://app.netlify.com/drop**
-2. Drag the entire `deploy` folder onto the page.
-3. Copy the link it gives you.
-4. Open it on your phone.
-5. In the app, expand **Settings** and add:
-   - Your free TMDB API key (themoviedb.org)
-   - The services you actually subscribe to
+## Features
 
-That’s it. You can now search and see where things are streaming, available to rent, or free.
+- **Search** for movies and TV shows
+- **Discover** titles by genre, minimum rating, and decade
+- Filter results to only services you subscribe to ("My Services")
+- Clear breakdown of Streaming, Rent, and Buy options
+- "Yours" highlighting for services you actually pay for
+- Direct links to IMDb and Rotten Tomatoes
+- TMDB ratings shown on every result
+- Fully installable as a Progressive Web App (PWA)
 
-## Notes
+## Getting Started
 
-- The Roku control features are still available but collapsed by default (they are now secondary).
-- Install it to your home screen for the best experience (PWA).
-- Your phone only needs to be on the same Wi-Fi as your Roku if you want to use the remote features.
+1. Open the app
+2. Expand **TMDB API Key** and paste your free API key
+3. Check the services you subscribe to in **My Services**
+4. Start searching or using Discover
 
-## Updating
+### Getting a TMDB API Key (Free)
 
-When you want a newer version:
-- Replace `index.html` in this folder
-- Re-drop the folder on Netlify Drop (or Vercel)
+1. Go to [themoviedb.org](https://www.themoviedb.org)
+2. Create a free account
+3. Go to Settings → API → Request an API Key (v3)
+4. Copy the key and paste it into the app
 
-See `HOW_TO_USE.md` for more details.
+## Self-Hosting / Deployment
+
+Brous is a completely static site (no backend). You can host it anywhere that supports static files.
+
+### Recommended: Cloudflare Pages (Current Setup)
+- Unlimited bandwidth on the free plan
+- Automatic deployments from GitHub
+- Excellent global performance
+
+### Other Good Options
+- GitHub Pages
+- Netlify
+- Vercel
+- Render Static Sites
+
+## Tech Stack
+
+- Vanilla HTML, CSS, and JavaScript
+- Tailwind CSS (via CDN)
+- The Movie Database (TMDB) API
+
+## Credits
+
+Movie and TV data provided by [The Movie Database (TMDB)](https://www.themoviedb.org/).
+
+---
+
+This project started as a personal tool to solve inconsistent search results across streaming apps. It is no longer tied to any specific device or remote control features.
