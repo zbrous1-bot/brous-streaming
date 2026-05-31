@@ -563,8 +563,8 @@
     }
 
     async function performDiscover(reset = true) {
-      const apiKey = loadTMDBKey();
-      if (!apiKey) { alert('Add your TMDB API key in Settings first'); return; }
+      // Note: TMDB key is now handled securely in the Cloudflare Worker.
+      // No client-side key is required anymore.
 
       const container = document.getElementById('results');
       const initial = document.getElementById('initial-state');
@@ -925,8 +925,8 @@
     async function performSearch() {
       const query = document.getElementById('search-input').value.trim();
       if (!query) return;
-      const apiKey = loadTMDBKey();
-      if (!apiKey) { alert('Add your TMDB API key in Settings first'); return; }
+      // Note: TMDB key is now handled securely in the Cloudflare Worker.
+      // No client-side key is required anymore.
 
       const container = document.getElementById('results');
       const initial = document.getElementById('initial-state');
@@ -1120,6 +1120,9 @@
           if (myListDetails.open) renderWatchlist();
         });
       }
+
+      // Note: We no longer require the user to paste a TMDB key in the browser.
+      // All TMDB requests now go through the Cloudflare Worker, which holds the real key securely.
     }
 
     // Re-render watchlist when adding from anywhere
