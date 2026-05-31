@@ -242,74 +242,80 @@
     </div>
 
     <!-- Search -->
-    <div class="mb-4">
-      <div class="flex gap-2 items-center mb-2">
-        <div class="relative flex-1">
-          <i class="fa-solid fa-search absolute left-4 top-3.5 text-zinc-500"></i>
-          <input id="search-input" type="text" placeholder="Search for a movie or show..."
-                 class="search-input w-full bg-zinc-900 border border-zinc-700 focus:border-zinc-400 pl-11 pr-5 py-3.5 rounded-3xl text-[16px] outline-none placeholder:text-zinc-500"
-                 onkeypress="if (event.key === 'Enter') performSearch()">
+    <div class="mb-5">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
+        <div class="flex gap-2 items-center mb-3">
+          <div class="relative flex-1">
+            <i class="fa-solid fa-search absolute left-4 top-3.5 text-zinc-500"></i>
+            <input id="search-input" type="text" placeholder="Search for a movie or show..."
+                   class="search-input w-full bg-zinc-950 border border-zinc-700 focus:border-zinc-400 pl-11 pr-5 py-3.5 rounded-3xl text-[16px] outline-none placeholder:text-zinc-500"
+                   onkeypress="if (event.key === 'Enter') performSearch()">
+          </div>
+          <label class="flex items-center gap-2 text-[15px] text-zinc-300 whitespace-nowrap cursor-pointer select-none ml-1">
+            <input type="checkbox" id="my-services-only" onchange="performSearch()" class="accent-white scale-110">
+            <span class="text-[15px]">My services</span>
+          </label>
         </div>
-        <label class="flex items-center gap-2 text-[15px] text-zinc-300 whitespace-nowrap cursor-pointer select-none">
-          <input type="checkbox" id="my-services-only" onchange="performSearch()" class="accent-white scale-110">
-          <span class="text-sm">My services</span>
-        </label>
-      </div>
-      <div class="flex items-center gap-2 mt-2">
-        <div class="inline-flex rounded-3xl bg-zinc-900 border border-zinc-700 p-0.5 text-sm">
-          <button onclick="setSearchType('movie')" id="search-type-movie"
-                  class="px-3.5 py-1 rounded-3xl font-medium bg-white text-black text-[13px]">Movies</button>
-          <button onclick="setSearchType('tv')" id="search-type-tv"
-                  class="px-3.5 py-1 rounded-3xl font-medium text-zinc-300 text-[13px]">TV Shows</button>
+
+        <div class="flex items-center gap-2">
+          <div class="inline-flex rounded-3xl bg-zinc-950 border border-zinc-700 p-0.5 text-sm">
+            <button onclick="setSearchType('movie')" id="search-type-movie"
+                    class="px-3.5 py-1 rounded-3xl font-medium bg-white text-black text-[13px]">Movies</button>
+            <button onclick="setSearchType('tv')" id="search-type-tv"
+                    class="px-3.5 py-1 rounded-3xl font-medium text-zinc-300 text-[13px]">TV Shows</button>
+          </div>
+          <div class="text-[12px] text-zinc-500 ml-2">
+            Search specific titles
+          </div>
         </div>
-      </div>
-      <div class="text-[13px] text-zinc-500 px-1 mt-1">
-        Search specific titles, or use Discover below to browse by genre across your services.
       </div>
     </div>
 
     <!-- Discover by genre -->
     <div class="mb-5">
-      <div class="flex items-center justify-between mb-2 px-1 pl-2 border-l-2 border-indigo-500/60">
-        <div class="text-[13px] font-medium text-zinc-400">Discover — filter by genre, rating &amp; decade</div>
-        <button onclick="clearSelectedGenres()" class="text-[11px] text-zinc-500 hover:text-zinc-400">Clear all</button>
-      </div>
-      
-      <!-- Genre chips -->
-      <div id="genre-chips" class="flex flex-wrap gap-1.5 mb-3"></div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <div class="text-[13px] font-medium text-zinc-400">Discover — filter by genre, rating &amp; decade</div>
+          <button onclick="clearSelectedGenres()" class="text-[11px] text-zinc-500 hover:text-zinc-400">Clear all</button>
+        </div>
+        
+        <!-- Genre chips -->
+        <div id="genre-chips" class="flex flex-wrap gap-1.5 mb-3"></div>
 
-      <!-- Rating filter -->
-      <div class="mb-2">
-        <div class="text-[11px] text-zinc-500 px-1 mb-1">Minimum rating (TMDB)</div>
-        <div id="rating-chips" class="flex flex-wrap gap-1.5"></div>
-      </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Rating filter -->
+          <div>
+            <div class="text-[11px] text-zinc-500 px-1 mb-1">Minimum rating (TMDB)</div>
+            <div id="rating-chips" class="flex flex-wrap gap-1.5"></div>
+          </div>
 
-      <!-- Decade filter -->
-      <div class="mb-3">
-        <div class="text-[11px] text-zinc-500 px-1 mb-1">Decade</div>
-        <div id="decade-chips" class="flex flex-wrap gap-1.5"></div>
-      </div>
-
-      <div class="flex items-center gap-2 flex-wrap">
-        <!-- Media type toggle -->
-        <div class="inline-flex rounded-3xl bg-zinc-900 border border-zinc-700 p-0.5 text-sm">
-          <button onclick="setDiscoverType('movie')" id="type-movie"
-                  class="px-4 py-1 rounded-3xl font-medium bg-white text-black">Movies</button>
-          <button onclick="setDiscoverType('tv')" id="type-tv"
-                  class="px-4 py-1 rounded-3xl font-medium text-zinc-300">TV Shows</button>
+          <!-- Decade filter -->
+          <div>
+            <div class="text-[11px] text-zinc-500 px-1 mb-1">Decade</div>
+            <div id="decade-chips" class="flex flex-wrap gap-1.5"></div>
+          </div>
         </div>
 
-        <label class="flex items-center gap-1.5 text-sm text-zinc-300 cursor-pointer select-none">
-          <input type="checkbox" id="discover-my-services" class="accent-white scale-110" checked>
-          <span class="text-[15px]">Only my services</span>
-        </label>
+        <div class="flex items-center gap-2 flex-wrap mt-4 pt-4 border-t border-zinc-800">
+          <!-- Media type toggle -->
+          <div class="inline-flex rounded-3xl bg-zinc-950 border border-zinc-700 p-0.5 text-sm">
+            <button onclick="setDiscoverType('movie')" id="type-movie"
+                    class="px-4 py-1 rounded-3xl font-medium bg-white text-black">Movies</button>
+            <button onclick="setDiscoverType('tv')" id="type-tv"
+                    class="px-4 py-1 rounded-3xl font-medium text-zinc-300">TV Shows</button>
+          </div>
 
-        <button onclick="performDiscover()"
-                class="ml-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-400 text-white text-sm font-semibold rounded-3xl shadow-lg shadow-indigo-950/50 transition-all active:scale-[0.985]">
-          Browse
-        </button>
+          <label class="flex items-center gap-1.5 text-sm text-zinc-300 cursor-pointer select-none ml-1">
+            <input type="checkbox" id="discover-my-services" class="accent-white scale-110" checked>
+            <span class="text-[15px]">Only my services</span>
+          </label>
+
+          <button onclick="performDiscover()"
+                  class="ml-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-400 text-white text-sm font-semibold rounded-3xl shadow-lg shadow-indigo-950/50 transition-all active:scale-[0.985]">
+            Browse
+          </button>
+        </div>
       </div>
-      <div class="text-[10px] text-zinc-500 px-1 mt-1.5">Filters titles available on your selected services when checked.</div>
     </div>
 
     <!-- Active Filters Summary -->
@@ -811,18 +817,21 @@
               const name = getProviderName(p);
               const isMine = Object.keys(services).some(k => services[k] && name.toLowerCase().includes(k));
               html += `
-                <div class="flex items-center py-2.5 border-b border-zinc-800 last:border-none transition-colors hover:bg-white/5 rounded-lg -mx-1 px-1">
+                <div class="flex items-center py-2.5 border-b border-zinc-800 last:border-none transition-all hover:bg-white/5 rounded-lg -mx-1 px-1 ${isMine ? 'border-l-2 border-emerald-500 pl-2' : ''}">
                   <div class="flex items-center gap-2 text-[15px]">
                     <span class="${isMine ? 'font-semibold text-emerald-400' : ''}">${name}</span>
-                    ${isMine ? '<span class="text-[11px] px-1.5 bg-emerald-900 text-emerald-400 rounded">Yours</span>' : ''}
+                    ${isMine ? '<span class="text-[10px] px-1.5 py-px bg-emerald-900 text-emerald-400 rounded">Yours</span>' : ''}
                   </div>
                 </div>`;
             });
             html += `</div></div>`;
           });
         } else {
-          html = `<div class="text-xs text-zinc-400 py-3 px-1">No availability data</div>`;
+          html = `<div class="text-[12px] text-zinc-400 py-3 px-1">No availability data</div>`;
         }
+
+        const mediaLabel = (m._mediaType || 'movie') === 'tv' ? 'TV' : 'Movie';
+        const mediaColor = (m._mediaType || 'movie') === 'tv' ? 'bg-sky-900 text-sky-400' : 'bg-violet-900 text-violet-400';
 
         const card = document.createElement('div');
         card.className = 'movie-card bg-zinc-900 border border-zinc-700 rounded-3xl p-5';
@@ -831,8 +840,11 @@
             ${poster ? `<img src="${poster}" class="w-16 h-[96px] rounded-2xl object-cover ring-1 ring-zinc-800 flex-shrink-0 shadow">` : ''}
             <div class="flex-1 min-w-0 pt-1">
               <div>
-                <div class="font-semibold text-[18px] leading-[1.15] tracking-[-0.2px] pr-1">${title}</div>
-                <div class="flex items-center gap-2 mt-1">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="font-semibold text-[18px] leading-[1.15] tracking-[-0.2px] pr-1">${title}</div>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${mediaColor}">${mediaLabel}</span>
+                </div>
+                <div class="flex items-center gap-2 mt-1.5 flex-wrap">
                   ${year ? `<span class="text-zinc-400 text-[13px]">${year}</span>` : ''}
                   ${m.vote_average ? `<span class="inline-flex items-center gap-0.5 text-[11px] px-1.5 py-px rounded bg-zinc-800 text-amber-400 font-medium"><i class="fa-solid fa-star text-[9px]"></i> ${m.vote_average.toFixed(1)}</span>` : ''}
                   ${m.imdb_id ? `
