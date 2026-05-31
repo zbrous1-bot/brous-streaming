@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#18181b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Brous">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Brous — Find Where to Watch</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%2318181b'/%3E%3Ctext x='90' y='115' font-size='80' fill='white' text-anchor='middle' font-family='system-ui, sans-serif' font-weight='700'%3EB%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { 
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      /* iPhone + Android safe area support */
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .modern-card {
+      background-color: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 20px;
+    }
+
+    .movie-card { 
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      border: 1px solid #3f3f46;
+    }
+    .movie-card:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      border-color: #52525b;
+    }
+
+    .section-header {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #71717a;
+    }
+
+    .search-input {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+    .search-input:focus {
+      border-color: rgb(99, 102, 241);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+    }
+
+    .quick-chip {
+      transition: all 0.1s ease;
+      font-weight: 500;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .quick-chip:active {
+      transform: scale(0.95);
+    }
+
+    .accordion-header {
+      transition: background-color 0.1s ease;
+    }
+    .accordion-header:hover {
+      background-color: #27272a;
+    }
+
+    /* Better touch behavior for iPhone + Android */
+    button, .quick-chip, summary {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Prevent pull-to-refresh on some browsers */
+    .no-pull-refresh {
+      overscroll-behavior: contain;
+    }
+
+    /* Blue-violet accent colors */
+    :root {
+      --accent: 99, 102, 241; /* indigo-500 - nice blue-violet */
+    }
+
+    /* Cool blue-violet highlights around availability "tables" with smooth animations */
+    .provider-table {
+      border: 1px solid rgba(var(--accent), 0.25);
+      box-shadow: 0 0 0 1px rgba(var(--accent), 0.08);
+      transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .provider-table:hover {
+      border-color: rgba(var(--accent), 0.5);
+      box-shadow: 0 0 0 1px rgba(var(--accent), 0.22);
+    }
+
+    /* Animated blue-violet treatment for Streaming sections */
+    .provider-table.streaming {
+      border-color: rgba(var(--accent), 0.38);
+      background: linear-gradient(150deg, rgba(var(--accent), 0.04), transparent);
+    }
+    .provider-table.streaming:hover {
+      border-color: rgba(var(--accent), 0.6);
+      box-shadow: 0 0 0 1px rgba(var(--accent), 0.32),
+                  0 0 12px rgba(var(--accent), 0.18);
+    }
+
+    /* Subtle animated glow on streaming tables (breathing effect on hover) */
+    .provider-table.streaming:hover {
+      animation: streaming-glow 2.2s ease-in-out infinite;
+    }
+
+    @keyframes streaming-glow {
+      0%, 100% {
+        box-shadow: 0 0 0 1px rgba(var(--accent), 0.32),
+                    0 0 12px rgba(var(--accent), 0.18);
+      }
+      50% {
+        box-shadow: 0 0 0 1px rgba(var(--accent), 0.42),
+                    0 0 22px rgba(var(--accent), 0.28);
+      }
+    }
+
+    /* Blue-violet lift + glow on result cards - smooth animated transition */
+    .movie-card {
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: card-enter 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+      padding: 1.25rem; /* slightly more breathing room */
+    }
+    .movie-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 22px 28px -8px rgb(0 0 0 / 0.12), 
+                  0 10px 12px -6px rgb(0 0 0 / 0.1),
+                  0 0 0 1px rgba(var(--accent), 0.16);
+    }
+
+    @keyframes card-enter {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Blue-violet accent on active filter chips - with pop animation */
+    .filter-chip-active {
+      background-color: rgba(var(--accent), 0.92);
+      border-color: rgb(var(--accent));
+      color: white;
+      font-weight: 600;
+      transform: scale(1.02);
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                  background-color 0.2s ease,
+                  border-color 0.2s ease;
+    }
+    .filter-chip-active:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200 no-pull-refresh">
+  <div class="max-w-7xl mx-auto px-5 pt-5 pb-10">
+
+    <!-- Header -->
+    <div class="mb-8 flex items-end justify-between">
+      <div>
+        <h1 class="text-5xl font-semibold tracking-[-2.5px] text-white">Brous</h1>
+        <p class="text-zinc-400 text-[14px] mt-1 tracking-tight">Find where to watch movies &amp; TV</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="installPWA()" id="install-btn"
+                class="hidden text-[10px] px-3 py-1.5 rounded-3xl bg-white text-black font-medium active:bg-zinc-200">
+          Install
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Sections -->
+    <div class="space-y-3 mb-6">
+
+      <!-- TMDB API (Dropdown) -->
+      <details class="modern-card group">
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-key text-xl text-zinc-300"></i>
+            <div>
+              <div class="font-semibold">TMDB API Key</div>
+              <div class="text-xs text-zinc-500">For movie & TV search & availability</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
+        </summary>
+        <div class="px-5 pb-5 border-t border-zinc-800 pt-4 space-y-3">
+          <div class="flex gap-2">
+            <input id="tmdb-key" type="password" placeholder="Paste your TMDB API key"
+                   class="flex-1 bg-zinc-950 border border-zinc-700 rounded-3xl px-4 py-3 text-[15px] outline-none">
+            <button onclick="saveTMDBKey()" class="px-5 py-3 bg-white text-black font-semibold rounded-3xl text-sm active:bg-zinc-200">Save</button>
+            <button onclick="testTMDBKey()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-3xl text-sm">Test</button>
+          </div>
+          <div id="tmdb-save-status" class="text-emerald-400 text-sm"></div>
+        </div>
+      </details>
+
+      <!-- My Services (Dropdown) -->
+      <details class="modern-card group" open>
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-list-check text-xl text-zinc-300"></i>
+            <div>
+              <div class="font-semibold">My Services</div>
+              <div class="text-xs text-zinc-500">Highlight services you subscribe to</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
+        </summary>
+        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
+          <div class="grid grid-cols-3 gap-2 text-sm">
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-netflix" onchange="savePreferences()"> Netflix</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-hulu" onchange="savePreferences()"> Hulu</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-max" onchange="savePreferences()"> Max</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-prime" onchange="savePreferences()"> Prime Video</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-disney" onchange="savePreferences()"> Disney+</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-peacock" onchange="savePreferences()"> Peacock</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-apple" onchange="savePreferences()"> Apple TV+</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="svc-paramount" onchange="savePreferences()"> Paramount+</label>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+    <!-- Search -->
+    <div class="mb-4">
+      <div class="flex gap-2 items-center mb-2">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-search absolute left-4 top-3.5 text-zinc-500"></i>
+          <input id="search-input" type="text" placeholder="Search for a movie or show..."
+                 class="search-input w-full bg-zinc-900 border border-zinc-700 focus:border-zinc-400 pl-11 pr-5 py-3.5 rounded-3xl text-[16px] outline-none placeholder:text-zinc-500"
+                 onkeypress="if (event.key === 'Enter') performSearch()">
+        </div>
+        <label class="flex items-center gap-2 text-[15px] text-zinc-300 whitespace-nowrap cursor-pointer select-none">
+          <input type="checkbox" id="my-services-only" onchange="performSearch()" class="accent-white scale-110">
+          <span class="text-sm">My services</span>
+        </label>
+      </div>
+      <div class="flex items-center gap-2 mt-2">
+        <div class="inline-flex rounded-3xl bg-zinc-900 border border-zinc-700 p-0.5 text-sm">
+          <button onclick="setSearchType('movie')" id="search-type-movie"
+                  class="px-3.5 py-1 rounded-3xl font-medium bg-white text-black text-[13px]">Movies</button>
+          <button onclick="setSearchType('tv')" id="search-type-tv"
+                  class="px-3.5 py-1 rounded-3xl font-medium text-zinc-300 text-[13px]">TV Shows</button>
+        </div>
+      </div>
+      <div class="text-[13px] text-zinc-500 px-1 mt-1">
+        Search specific titles, or use Discover below to browse by genre across your services.
+      </div>
+    </div>
+
+    <!-- Discover by genre -->
+    <div class="mb-5">
+      <div class="flex items-center justify-between mb-2 px-1 pl-2 border-l-2 border-indigo-500/60">
+        <div class="text-[13px] font-medium text-zinc-400">Discover — filter by genre, rating &amp; decade</div>
+        <button onclick="clearSelectedGenres()" class="text-[11px] text-zinc-500 hover:text-zinc-400">Clear all</button>
+      </div>
+      
+      <!-- Genre chips -->
+      <div id="genre-chips" class="flex flex-wrap gap-1.5 mb-3"></div>
+
+      <!-- Rating filter -->
+      <div class="mb-2">
+        <div class="text-[11px] text-zinc-500 px-1 mb-1">Minimum rating (TMDB)</div>
+        <div id="rating-chips" class="flex flex-wrap gap-1.5"></div>
+      </div>
+
+      <!-- Decade filter -->
+      <div class="mb-3">
+        <div class="text-[11px] text-zinc-500 px-1 mb-1">Decade</div>
+        <div id="decade-chips" class="flex flex-wrap gap-1.5"></div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Media type toggle -->
+        <div class="inline-flex rounded-3xl bg-zinc-900 border border-zinc-700 p-0.5 text-sm">
+          <button onclick="setDiscoverType('movie')" id="type-movie"
+                  class="px-4 py-1 rounded-3xl font-medium bg-white text-black">Movies</button>
+          <button onclick="setDiscoverType('tv')" id="type-tv"
+                  class="px-4 py-1 rounded-3xl font-medium text-zinc-300">TV Shows</button>
+        </div>
+
+        <label class="flex items-center gap-1.5 text-sm text-zinc-300 cursor-pointer select-none">
+          <input type="checkbox" id="discover-my-services" class="accent-white scale-110" checked>
+          <span class="text-[15px]">Only my services</span>
+        </label>
+
+        <button onclick="performDiscover()"
+                class="ml-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-400 text-white text-sm font-semibold rounded-3xl shadow-lg shadow-indigo-950/50 transition-all active:scale-[0.985]">
+          Browse
+        </button>
+      </div>
+      <div class="text-[10px] text-zinc-500 px-1 mt-1.5">Filters titles available on your selected services when checked.</div>
+    </div>
+
+    <!-- Active Filters Summary -->
+    <div id="active-filters" class="hidden mb-3 flex flex-wrap gap-2 px-1"></div>
+
+    <!-- Results -->
+    <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <!-- Load more for Discover -->
+    <div id="load-more-container" class="hidden text-center mt-4">
+      <button onclick="loadMoreDiscover()"
+              class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-white text-sm font-medium rounded-3xl border border-zinc-700">
+        Show more
+      </button>
+    </div>
+
+    <!-- Initial state / welcome message -->
+    <div id="initial-state" class="text-center py-12 text-zinc-400">
+      <i class="fa-solid fa-search text-4xl mb-4 opacity-40"></i>
+      <p class="text-lg text-zinc-300">Search above or use Discover below</p>
+      <p class="text-sm mt-1">Filter by genre, rating, decade &amp; your services.</p>
+    </div>
+
+  </div>
+
+  <script>
+    // Discover data
+    const GENRES = [
+      {id: 28, name: 'Action'}, {id: 12, name: 'Adventure'}, {id: 16, name: 'Animation'},
+      {id: 35, name: 'Comedy'}, {id: 80, name: 'Crime'}, {id: 99, name: 'Documentary'},
+      {id: 18, name: 'Drama'}, {id: 10751, name: 'Family'}, {id: 14, name: 'Fantasy'},
+      {id: 27, name: 'Horror'}, {id: 9648, name: 'Mystery'}, {id: 10749, name: 'Romance'},
+      {id: 878, name: 'Sci-Fi'}, {id: 53, name: 'Thriller'}
+    ];
+
+    const SERVICE_TO_PROVIDER_ID = {
+      netflix: 8, hulu: 15, max: 1899, prime: 9, disney: 337,
+      peacock: 386, apple: 350, paramount: 531
+    };
+
+    let selectedGenres = new Set();
+    let currentDiscoverType = 'movie';
+    let minRating = 0;
+    let selectedDecade = null; // {label, gte, lte} or null
+    let currentSearchType = 'movie';
+    let currentDiscoverPage = 1;
+    let currentDiscoverResults = [];
+
+    const RATING_OPTIONS = [0, 6, 7, 7.5, 8];
+    const DECADES = [
+      {label: '2020s', gte: '2020-01-01', lte: '2029-12-31'},
+      {label: '2010s', gte: '2010-01-01', lte: '2019-12-31'},
+      {label: '2000s', gte: '2000-01-01', lte: '2009-12-31'},
+      {label: '1990s', gte: '1990-01-01', lte: '1999-12-31'},
+      {label: '1980s', gte: '1980-01-01', lte: '1989-12-31'},
+      {label: '1970s', gte: '1970-01-01', lte: '1979-12-31'},
+    ];
+
+    function renderGenreChips() {
+      const container = document.getElementById('genre-chips');
+      if (!container) return;
+      container.innerHTML = '';
+      GENRES.forEach(g => {
+        const isSelected = selectedGenres.has(g.id);
+        const btn = document.createElement('button');
+        btn.textContent = g.name;
+        btn.className = `px-3 py-1 text-xs rounded-2xl border transition-all active:scale-[0.985] ${isSelected 
+          ? 'filter-chip-active' 
+          : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'}`;
+        btn.onclick = () => {
+          if (selectedGenres.has(g.id)) selectedGenres.delete(g.id);
+          else selectedGenres.add(g.id);
+          renderGenreChips();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function clearSelectedGenres() {
+      selectedGenres.clear();
+      minRating = 0;
+      selectedDecade = null;
+      renderGenreChips();
+      renderRatingChips();
+      renderDecadeChips();
+      const activeFilters = document.getElementById('active-filters');
+      if (activeFilters) activeFilters.classList.add('hidden');
+    }
+
+    function renderRatingChips() {
+      const container = document.getElementById('rating-chips');
+      if (!container) return;
+      container.innerHTML = '';
+
+      RATING_OPTIONS.forEach(val => {
+        const isSelected = minRating === val;
+        const label = val === 0 ? 'Any' : `${val}+`;
+        const btn = document.createElement('button');
+        btn.textContent = label;
+        btn.className = `px-3 py-1 text-xs rounded-2xl border transition-all active:scale-[0.985] ${isSelected 
+          ? 'filter-chip-active' 
+          : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'}`;
+        btn.onclick = () => {
+          minRating = val;
+          renderRatingChips();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function renderDecadeChips() {
+      const container = document.getElementById('decade-chips');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Any chip
+      const anyBtn = document.createElement('button');
+      anyBtn.textContent = 'Any';
+      anyBtn.className = `px-3 py-1 text-xs rounded-2xl border transition-all active:scale-[0.985] ${!selectedDecade 
+        ? 'filter-chip-active' 
+        : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'}`;
+      anyBtn.onclick = () => {
+        selectedDecade = null;
+        renderDecadeChips();
+      };
+      container.appendChild(anyBtn);
+
+      DECADES.forEach(d => {
+        const isSelected = selectedDecade && selectedDecade.label === d.label;
+        const btn = document.createElement('button');
+        btn.textContent = d.label;
+        btn.className = `px-3 py-1 text-xs rounded-2xl border transition-all active:scale-[0.985] ${isSelected 
+          ? 'filter-chip-active' 
+          : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800'}`;
+        btn.onclick = () => {
+          selectedDecade = d;
+          renderDecadeChips();
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function setDiscoverType(type) {
+      currentDiscoverType = type;
+      const movieBtn = document.getElementById('type-movie');
+      const tvBtn = document.getElementById('type-tv');
+      if (movieBtn && tvBtn) {
+        if (type === 'movie') {
+          movieBtn.classList.add('bg-white', 'text-black');
+          movieBtn.classList.remove('text-zinc-300');
+          tvBtn.classList.remove('bg-white', 'text-black');
+          tvBtn.classList.add('text-zinc-300');
+        } else {
+          tvBtn.classList.add('bg-white', 'text-black');
+          tvBtn.classList.remove('text-zinc-300');
+          movieBtn.classList.remove('bg-white', 'text-black');
+          movieBtn.classList.add('text-zinc-300');
+        }
+      }
+    }
+
+    function setSearchType(type) {
+      currentSearchType = type;
+      const movieBtn = document.getElementById('search-type-movie');
+      const tvBtn = document.getElementById('search-type-tv');
+      if (movieBtn && tvBtn) {
+        if (type === 'movie') {
+          movieBtn.classList.add('bg-white', 'text-black');
+          movieBtn.classList.remove('text-zinc-300');
+          tvBtn.classList.remove('bg-white', 'text-black');
+          tvBtn.classList.add('text-zinc-300');
+        } else {
+          tvBtn.classList.add('bg-white', 'text-black');
+          tvBtn.classList.remove('text-zinc-300');
+          movieBtn.classList.remove('bg-white', 'text-black');
+          movieBtn.classList.add('text-zinc-300');
+        }
+      }
+    }
+
+    async function performDiscover(reset = true) {
+      const apiKey = loadTMDBKey();
+      if (!apiKey) { alert('Add your TMDB API key in Settings first'); return; }
+
+      const container = document.getElementById('results');
+      const initial = document.getElementById('initial-state');
+      if (initial) initial.style.display = 'none';
+
+      if (reset) {
+        currentDiscoverPage = 1;
+        currentDiscoverResults = [];
+        container.innerHTML = `<div class="text-center py-6 text-zinc-400">Finding titles...</div>`;
+      }
+
+      const genreIds = Array.from(selectedGenres);
+      const onlyMine = document.getElementById('discover-my-services')?.checked;
+
+      let url = `https://api.themoviedb.org/3/discover/${currentDiscoverType}?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&include_adult=false&watch_region=US&page=${currentDiscoverPage}`;
+      if (genreIds.length > 0) {
+        url += `&with_genres=${genreIds.join(',')}`;
+      }
+      if (minRating > 0) {
+        url += `&vote_average.gte=${minRating}&vote_count.gte=75`;
+      }
+      if (selectedDecade) {
+        const dateField = currentDiscoverType === 'movie' ? 'primary_release_date' : 'first_air_date';
+        url += `&${dateField}.gte=${selectedDecade.gte}&${dateField}.lte=${selectedDecade.lte}`;
+      }
+      if (onlyMine) {
+        const services = getUserServices();
+        const providerIds = Object.keys(services)
+          .filter(k => services[k])
+          .map(k => SERVICE_TO_PROVIDER_ID[k])
+          .filter(Boolean);
+        if (providerIds.length > 0) {
+          url += `&with_watch_providers=${providerIds.join('|')}`;
+        }
+      }
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.results?.length) {
+          if (reset) {
+            container.innerHTML = `<div class="text-center py-10 text-zinc-400">
+              <p>No titles found for those filters.</p>
+              <p class="text-xs mt-2 text-zinc-500">Try removing a genre, lowering the minimum rating, or unchecking "My services".</p>
+            </div>`;
+          }
+          document.getElementById('load-more-container').classList.add('hidden');
+          return;
+        }
+
+        const enriched = await Promise.all(data.results.map(async item => {
+          const isMovie = currentDiscoverType === 'movie';
+          const mediaPath = isMovie ? 'movie' : 'tv';
+          try {
+            const [provRes, extRes] = await Promise.all([
+              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/watch/providers?api_key=${apiKey}`),
+              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/external_ids?api_key=${apiKey}`)
+            ]);
+            const providers = (await provRes.json()).results?.US || null;
+            const external = await extRes.json();
+            return { 
+              ...item, 
+              providers, 
+              imdb_id: external.imdb_id || null,
+              _mediaType: currentDiscoverType
+            };
+          } catch {
+            return { ...item, providers: null, imdb_id: null, _mediaType: currentDiscoverType };
+          }
+        }));
+
+        currentDiscoverResults = currentDiscoverResults.concat(enriched);
+
+        renderResults(currentDiscoverResults);
+        renderActiveFilters();
+
+        // Show/hide load more button
+        const loadMoreContainer = document.getElementById('load-more-container');
+        if (data.results.length >= 20 && currentDiscoverPage < (data.total_pages || 5)) {
+          loadMoreContainer.classList.remove('hidden');
+        } else {
+          loadMoreContainer.classList.add('hidden');
+        }
+
+      } catch (e) {
+        if (reset) {
+          container.innerHTML = `<div class="text-center py-6 text-red-400">Error loading results. Check your key and connection.</div>`;
+        }
+        document.getElementById('load-more-container').classList.add('hidden');
+      }
+    }
+
+    function loadMoreDiscover() {
+      currentDiscoverPage++;
+      performDiscover(false);
+    }
+
+    function renderActiveFilters() {
+      const container = document.getElementById('active-filters');
+      if (!container) return;
+
+      const filters = [];
+
+      if (selectedGenres.size > 0) {
+        const genreNames = Array.from(selectedGenres).map(id => {
+          const g = GENRES.find(x => x.id === id);
+          return g ? g.name : '';
+        }).filter(Boolean);
+        filters.push(`Genres: ${genreNames.join(', ')}`);
+      }
+      if (minRating > 0) filters.push(`Rating: ${minRating}+`);
+      if (selectedDecade) filters.push(`Decade: ${selectedDecade.label}`);
+      if (document.getElementById('discover-my-services')?.checked) {
+        filters.push('My Services');
+      }
+
+      if (filters.length === 0) {
+        container.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+      }
+
+      container.classList.remove('hidden');
+      container.innerHTML = filters.map(f => 
+        `<span class="text-[11px] px-2.5 py-1 bg-zinc-800 border border-zinc-700 rounded-2xl text-zinc-300">${f}</span>`
+      ).join('');
+    }
+
+    function saveTMDBKey(showFeedback = true) {
+      const key = document.getElementById('tmdb-key').value.trim();
+      if (key) {
+        localStorage.setItem('roki_tmdb_key', key);
+        if (showFeedback) {
+          const status = document.getElementById('tmdb-save-status');
+          if (status) {
+            status.textContent = 'Saved ✓';
+            status.classList.remove('hidden');
+            setTimeout(() => {
+              status.classList.add('hidden');
+              status.textContent = '';
+            }, 1500);
+          }
+        }
+      }
+    }
+
+    function loadTMDBKey() {
+      const key = localStorage.getItem('roki_tmdb_key');
+      const input = document.getElementById('tmdb-key');
+      if (key && input) {
+        input.value = key;
+      }
+      return key;
+    }
+
+    function setupAutoSaveTMDB() {
+      const input = document.getElementById('tmdb-key');
+      if (!input) return;
+      input.addEventListener('blur', () => saveTMDBKey(false));
+    }
+
+    async function testTMDBKey() {
+      const key = loadTMDBKey();
+      if (!key) { alert('Paste a key first'); return; }
+      const status = document.getElementById('tmdb-save-status');
+      if (status) status.textContent = 'Testing...';
+      try {
+        const res = await fetch(`https://api.themoviedb.org/3/configuration?api_key=${key}`);
+        const data = await res.json();
+        if (data.success === false) {
+          if (status) status.textContent = 'Invalid key';
+          setTimeout(() => { if (status) status.textContent = ''; }, 2000);
+        } else {
+          if (status) status.textContent = 'Key looks valid ✓';
+          setTimeout(() => { if (status) status.textContent = ''; }, 2000);
+        }
+      } catch (e) {
+        if (status) status.textContent = 'Test failed';
+        setTimeout(() => { if (status) status.textContent = ''; }, 2000);
+      }
+    }
+
+    function savePreferences() {
+      const prefs = {
+        netflix: document.getElementById('svc-netflix').checked,
+        hulu: document.getElementById('svc-hulu').checked,
+        max: document.getElementById('svc-max').checked,
+        prime: document.getElementById('svc-prime').checked,
+        disney: document.getElementById('svc-disney').checked,
+        peacock: document.getElementById('svc-peacock').checked,
+        apple: document.getElementById('svc-apple').checked,
+        paramount: document.getElementById('svc-paramount').checked,
+      };
+      localStorage.setItem('roki_services', JSON.stringify(prefs));
+    }
+
+    function loadPreferences() {
+      const saved = localStorage.getItem('roki_services');
+      if (!saved) return {};
+      const prefs = JSON.parse(saved);
+      const map = { netflix: 'svc-netflix', hulu: 'svc-hulu', max: 'svc-max', prime: 'svc-prime', disney: 'svc-disney', peacock: 'svc-peacock', apple: 'svc-apple', paramount: 'svc-paramount' };
+      Object.keys(map).forEach(k => {
+        const el = document.getElementById(map[k]);
+        if (el) el.checked = !!prefs[k];
+      });
+      return prefs;
+    }
+
+    function getUserServices() {
+      const saved = localStorage.getItem('roki_services');
+      return saved ? JSON.parse(saved) : {};
+    }
+
+    // TMDB
+    async function performSearch() {
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) return;
+      const apiKey = loadTMDBKey();
+      if (!apiKey) { alert('Add your TMDB API key in Settings first'); return; }
+
+      const container = document.getElementById('results');
+      const initial = document.getElementById('initial-state');
+      if (initial) initial.style.display = 'none';
+      container.innerHTML = `<div class="text-center py-6 text-zinc-400">Searching...</div>`;
+
+      const isMovie = currentSearchType === 'movie';
+      const searchEndpoint = isMovie ? 'movie' : 'tv';
+      const mediaPath = isMovie ? 'movie' : 'tv';
+
+      try {
+        const searchRes = await fetch(`https://api.themoviedb.org/3/search/${searchEndpoint}?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
+        const searchData = await searchRes.json();
+
+        if (searchData.success === false) {
+          container.innerHTML = `<div class="text-center py-6 text-red-400">TMDB error: ${searchData.status_message}</div>`;
+          return;
+        }
+        if (!searchData.results?.length) {
+          container.innerHTML = `
+            <div class="text-center py-10 text-zinc-400">
+              <i class="fa-solid fa-search text-3xl mb-3 opacity-50"></i>
+              <p>No results found for that search.</p>
+              <p class="text-xs mt-1">Try a different title or check your TMDB API key.</p>
+            </div>`;
+          return;
+        }
+
+        const top = searchData.results.slice(0, 6);
+        const enriched = await Promise.all(top.map(async item => {
+          try {
+            const [provRes, extRes] = await Promise.all([
+              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/watch/providers?api_key=${apiKey}`),
+              fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}/external_ids?api_key=${apiKey}`)
+            ]);
+            const providers = (await provRes.json()).results?.US || null;
+            const external = await extRes.json();
+            return { 
+              ...item, 
+              providers, 
+              imdb_id: external.imdb_id || null,
+              _mediaType: currentSearchType
+            };
+          } catch {
+            return { ...item, providers: null, imdb_id: null, _mediaType: currentSearchType };
+          }
+        }));
+
+        renderResults(enriched);
+        const activeFilters = document.getElementById('active-filters');
+        if (activeFilters) activeFilters.classList.add('hidden');
+      } catch (e) {
+        container.innerHTML = `<div class="text-center py-6 text-red-400">Error fetching data. Check your API key and internet.</div>`;
+      }
+    }
+
+    function quickSearch(q) {
+      document.getElementById('search-input').value = q;
+      performSearch();
+    }
+
+    function getProviderName(p) {
+      const map = { 8: 'Netflix', 9: 'Prime Video', 15: 'Hulu', 1899: 'Max', 337: 'Disney+', 386: 'Peacock', 350: 'Apple TV', 531: 'Paramount+', 2575: 'Tubi', 207: 'Pluto TV' };
+      return map[p.provider_id] || p.provider_name;
+    }
+
+    function renderResults(items) {
+      const container = document.getElementById('results');
+      const initial = document.getElementById('initial-state');
+      if (initial) initial.style.display = 'none';
+      container.innerHTML = '';
+      const services = getUserServices();
+
+      items.forEach(m => {
+        const title = m.title || m.name || 'Untitled';
+        const year = (m.release_date || m.first_air_date || '').slice(0, 4);
+        const poster = m.poster_path ? `https://image.tmdb.org/t/p/w92${m.poster_path}` : null;
+
+        let html = '';
+        if (m.providers) {
+          const groups = { stream: m.providers.flatrate || [], rent: m.providers.rent || [], buy: m.providers.buy || [] };
+          Object.entries(groups).forEach(([type, items]) => {
+            if (!items.length) return;
+            const label = type === 'stream' ? 'Streaming' : type.charAt(0).toUpperCase() + type.slice(1);
+            const icon = type === 'stream' ? 'fa-play' : type === 'rent' ? 'fa-shopping-cart' : 'fa-dollar-sign';
+            const color = type === 'stream' ? 'emerald' : type === 'rent' ? 'amber' : 'sky';
+
+            const labelColor = type === 'stream' ? 'text-emerald-400' : type === 'rent' ? 'text-amber-400' : 'text-sky-400';
+            const labelIcon = type === 'stream' ? 'fa-play' : type === 'rent' ? 'fa-shopping-cart' : 'fa-dollar-sign';
+            const isStreaming = type === 'stream';
+            const tableClasses = isStreaming 
+              ? 'provider-table streaming' 
+              : 'provider-table';
+            html += `<div class="mt-4 first:mt-0"><div class="text-[11px] font-semibold tracking-wider mb-1.5 px-1 flex items-center gap-2 ${labelColor}"><i class="fa-solid ${labelIcon}"></i> ${label}</div><div class="bg-zinc-950 rounded-2xl px-3 py-1.5 ${tableClasses}">`;
+            items.forEach(p => {
+              const name = getProviderName(p);
+              const isMine = Object.keys(services).some(k => services[k] && name.toLowerCase().includes(k));
+              html += `
+                <div class="flex items-center py-2.5 border-b border-zinc-800 last:border-none transition-colors hover:bg-white/5 rounded-lg -mx-1 px-1">
+                  <div class="flex items-center gap-2 text-[15px]">
+                    <span class="${isMine ? 'font-semibold text-emerald-400' : ''}">${name}</span>
+                    ${isMine ? '<span class="text-[11px] px-1.5 bg-emerald-900 text-emerald-400 rounded">Yours</span>' : ''}
+                  </div>
+                </div>`;
+            });
+            html += `</div></div>`;
+          });
+        } else {
+          html = `<div class="text-xs text-zinc-400 py-3 px-1">No availability data</div>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'movie-card bg-zinc-900 border border-zinc-700 rounded-3xl p-5';
+        card.innerHTML = `
+          <div class="flex gap-4">
+            ${poster ? `<img src="${poster}" class="w-16 h-[96px] rounded-2xl object-cover ring-1 ring-zinc-800 flex-shrink-0 shadow">` : ''}
+            <div class="flex-1 min-w-0 pt-1">
+              <div>
+                <div class="font-semibold text-[18px] leading-[1.15] tracking-[-0.2px] pr-1">${title}</div>
+                <div class="flex items-center gap-2 mt-1">
+                  ${year ? `<span class="text-zinc-400 text-[13px]">${year}</span>` : ''}
+                  ${m.vote_average ? `<span class="inline-flex items-center gap-0.5 text-[11px] px-1.5 py-px rounded bg-zinc-800 text-amber-400 font-medium"><i class="fa-solid fa-star text-[9px]"></i> ${m.vote_average.toFixed(1)}</span>` : ''}
+                  ${m.imdb_id ? `
+                    <a href="https://www.imdb.com/title/${m.imdb_id}/" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1 text-[10px] px-1.5 py-px rounded bg-[#f5c518] text-black font-bold no-underline hover:brightness-95">
+                      <i class="fa-brands fa-imdb text-sm"></i>
+                      <span>IMDb</span>
+                    </a>
+                  ` : ''}
+                  <a href="https://www.rottentomatoes.com/search?search=${encodeURIComponent(title + (year ? ' ' + year : ''))}" 
+                     target="_blank" rel="noopener"
+                     class="inline-flex items-center gap-1 text-[10px] px-1.5 py-px rounded bg-[#fa320a] text-white font-bold no-underline hover:brightness-95">
+                    <span>RT</span>
+                  </a>
+                </div>
+              </div>
+              <div class="mt-4">${html}</div>
+            </div>
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+
+    // Boot
+    function boot() {
+      loadTMDBKey();
+      loadPreferences();
+      setupAutoSaveTMDB();
+
+      // Initialize Discover UI
+      renderGenreChips();
+      renderRatingChips();
+      renderDecadeChips();
+      setDiscoverType('movie'); // default to Movies
+
+      // Initialize Search type
+      setSearchType('movie');
+    }
+
+    // PWA Install support (especially useful on Android)
+    let deferredPrompt;
+    const installBtn = document.getElementById('install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) installBtn.classList.remove('hidden');
+    });
+
+    function installPWA() {
+      if (installBtn) installBtn.classList.add('hidden');
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+        });
+      }
+    }
+
+    // Also show install button on Android Chrome if available
+    if (installBtn && /android/i.test(navigator.userAgent)) {
+      setTimeout(() => {
+        if (deferredPrompt) installBtn.classList.remove('hidden');
+      }, 3000);
+    }
+
+    window.onload = boot;
+  </script>
+
+  <div class="max-w-7xl mx-auto px-5 pb-8 text-center text-[11px] text-zinc-500">
+    Movies &amp; TV data powered by <a href="https://www.themoviedb.org" target="_blank" class="underline hover:text-zinc-300">TMDB</a>. Not affiliated with any streaming service.
+  </div>
+</body>
+</html>
