@@ -190,29 +190,6 @@
     <!-- Collapsible Sections -->
     <div class="space-y-3 mb-6">
 
-      <!-- TMDB API (Dropdown) -->
-      <details class="modern-card group">
-        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-key text-xl text-zinc-300"></i>
-            <div>
-              <div class="font-semibold">TMDB API Key</div>
-              <div class="text-xs text-zinc-500">API key is securely stored server-side (no longer needed in the browser)</div>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
-        </summary>
-        <div class="px-5 pb-5 border-t border-zinc-800 pt-4 space-y-3">
-          <div class="flex gap-2">
-            <input id="tmdb-key" type="password" placeholder="Paste your TMDB API key"
-                   class="flex-1 bg-zinc-950 border border-zinc-700 rounded-3xl px-4 py-3 text-[15px] outline-none">
-            <button onclick="saveTMDBKey()" class="px-5 py-3 bg-white text-black font-semibold rounded-3xl text-sm active:bg-zinc-200">Save</button>
-            <button onclick="testTMDBKey()" class="px-4 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-3xl text-sm">Test</button>
-          </div>
-          <div id="tmdb-save-status" class="text-emerald-400 text-sm"></div>
-        </div>
-      </details>
-
       <!-- My Services (Dropdown) -->
       <details class="modern-card group" open>
         <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
@@ -563,9 +540,6 @@
     }
 
     async function performDiscover(reset = true) {
-      // Note: TMDB key is now handled securely in the Cloudflare Worker.
-      // No client-side key is required anymore.
-
       const container = document.getElementById('results');
       const initial = document.getElementById('initial-state');
       if (initial) initial.style.display = 'none';
@@ -836,59 +810,7 @@
       });
     }
 
-    function saveTMDBKey(showFeedback = true) {
-      const key = document.getElementById('tmdb-key').value.trim();
-      if (key) {
-        localStorage.setItem('roki_tmdb_key', key);
-        if (showFeedback) {
-          const status = document.getElementById('tmdb-save-status');
-          if (status) {
-            status.textContent = 'Saved ✓';
-            status.classList.remove('hidden');
-            setTimeout(() => {
-              status.classList.add('hidden');
-              status.textContent = '';
-            }, 1500);
-          }
-        }
-      }
-    }
 
-    function loadTMDBKey() {
-      const key = localStorage.getItem('roki_tmdb_key');
-      const input = document.getElementById('tmdb-key');
-      if (key && input) {
-        input.value = key;
-      }
-      return key;
-    }
-
-    function setupAutoSaveTMDB() {
-      const input = document.getElementById('tmdb-key');
-      if (!input) return;
-      input.addEventListener('blur', () => saveTMDBKey(false));
-    }
-
-    async function testTMDBKey() {
-      const key = loadTMDBKey();
-      if (!key) { alert('Paste a key first'); return; }
-      const status = document.getElementById('tmdb-save-status');
-      if (status) status.textContent = 'Testing...';
-      try {
-        const res = await fetch(`/api/tmdb/3/configuration`);
-        const data = await res.json();
-        if (data.success === false) {
-          if (status) status.textContent = 'Invalid key';
-          setTimeout(() => { if (status) status.textContent = ''; }, 2000);
-        } else {
-          if (status) status.textContent = 'Key looks valid ✓';
-          setTimeout(() => { if (status) status.textContent = ''; }, 2000);
-        }
-      } catch (e) {
-        if (status) status.textContent = 'Test failed';
-        setTimeout(() => { if (status) status.textContent = ''; }, 2000);
-      }
-    }
 
     function savePreferences() {
       const prefs = {
@@ -925,8 +847,6 @@
     async function performSearch() {
       const query = document.getElementById('search-input').value.trim();
       if (!query) return;
-      // Note: TMDB key is now handled securely in the Cloudflare Worker.
-      // No client-side key is required anymore.
 
       const container = document.getElementById('results');
       const initial = document.getElementById('initial-state');
@@ -950,7 +870,7 @@
             <div class="text-center py-10 text-zinc-400">
               <i class="fa-solid fa-search text-3xl mb-3 opacity-50"></i>
               <p>No results found for that search.</p>
-              <p class="text-xs mt-1">Try a different title or check your TMDB API key.</p>
+              <p class="text-xs mt-1">Try a different title or adjust your filters.</p>
             </div>`;
           return;
         }
@@ -979,7 +899,7 @@
         const activeFilters = document.getElementById('active-filters');
         if (activeFilters) activeFilters.classList.add('hidden');
       } catch (e) {
-        container.innerHTML = `<div class="text-center py-6 text-red-400">Error fetching data. Check your API key and internet.</div>`;
+        container.innerHTML = `<div class="text-center py-6 text-red-400">Error fetching data. Check your internet connection.</div>`;
       }
     }
 
@@ -1098,9 +1018,7 @@
 
     // Boot
     function boot() {
-      loadTMDBKey();
       loadPreferences();
-      setupAutoSaveTMDB();
 
       // Initialize Discover UI
       renderGenreChips();
@@ -1121,8 +1039,6 @@
         });
       }
 
-      // Note: We no longer require the user to paste a TMDB key in the browser.
-      // All TMDB requests now go through the Cloudflare Worker, which holds the real key securely.
     }
 
     // Re-render watchlist when adding from anywhere
