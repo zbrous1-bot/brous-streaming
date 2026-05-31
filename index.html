@@ -239,6 +239,25 @@
         </div>
       </details>
 
+      <!-- My List -->
+      <details id="my-list-details" class="modern-card group">
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-list text-xl text-zinc-300"></i>
+            <div>
+              <div class="font-semibold">My List</div>
+              <div class="text-xs text-zinc-500">Saved titles you want to watch</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
+        </summary>
+        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
+          <div id="my-list-content" class="space-y-3 text-sm">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </details>
+
     </div>
 
     <!-- Search -->
@@ -305,6 +324,15 @@
                     class="px-4 py-1 rounded-3xl font-medium text-zinc-300">TV Shows</button>
           </div>
 
+          <!-- Sort -->
+          <select id="discover-sort" onchange="performDiscover()"
+                  class="bg-zinc-950 border border-zinc-700 rounded-3xl px-3 py-1.5 text-sm text-zinc-200 outline-none">
+            <option value="popularity.desc">Most Popular</option>
+            <option value="vote_average.desc">Highest Rated</option>
+            <option value="release_date.desc">Newest First</option>
+            <option value="release_date.asc">Oldest First</option>
+          </select>
+
           <label class="flex items-center gap-1.5 text-sm text-zinc-300 cursor-pointer select-none ml-1">
             <input type="checkbox" id="discover-my-services" class="accent-white scale-110" checked>
             <span class="text-[15px]">Only my services</span>
@@ -330,6 +358,41 @@
               class="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-white text-sm font-medium rounded-3xl border border-zinc-700">
         Show more
       </button>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div class="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <div id="modal-title" class="text-2xl font-semibold"></div>
+              <div id="modal-meta" class="text-zinc-400 mt-1"></div>
+            </div>
+            <button onclick="closeModal()" class="text-2xl text-zinc-400 hover:text-white">×</button>
+          </div>
+
+          <div id="modal-overview" class="text-zinc-300 leading-relaxed mb-5"></div>
+
+          <div id="modal-genres" class="flex flex-wrap gap-2 mb-5"></div>
+
+          <div class="mb-5">
+            <div class="text-sm font-medium text-zinc-400 mb-2">Where to watch</div>
+            <div id="modal-availability"></div>
+          </div>
+
+          <div class="flex gap-3">
+            <button id="modal-add-button"
+                    class="flex-1 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white text-sm font-semibold rounded-3xl">
+              Add to My List
+            </button>
+            <button onclick="closeModal()"
+                    class="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium rounded-3xl">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Initial state / welcome message -->
@@ -363,6 +426,9 @@
     let currentSearchType = 'movie';
     let currentDiscoverPage = 1;
     let currentDiscoverResults = [];
+
+    // Watchlist
+    let watchlist = JSON.parse(localStorage.getItem('brous_watchlist') || '[]');
 
     const RATING_OPTIONS = [0, 6, 7, 7.5, 8];
     const DECADES = [
@@ -513,7 +579,8 @@
       const genreIds = Array.from(selectedGenres);
       const onlyMine = document.getElementById('discover-my-services')?.checked;
 
-      let url = `https://api.themoviedb.org/3/discover/${currentDiscoverType}?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&include_adult=false&watch_region=US&page=${currentDiscoverPage}`;
+      const sortValue = document.getElementById('discover-sort')?.value || 'popularity.desc';
+      let url = `https://api.themoviedb.org/3/discover/${currentDiscoverType}?api_key=${apiKey}&language=en-US&sort_by=${sortValue}&include_adult=false&watch_region=US&page=${currentDiscoverPage}`;
       if (genreIds.length > 0) {
         url += `&with_genres=${genreIds.join(',')}`;
       }
@@ -626,6 +693,147 @@
       container.innerHTML = filters.map(f => 
         `<span class="text-[11px] px-2.5 py-1 bg-zinc-800 border border-zinc-700 rounded-2xl text-zinc-300">${f}</span>`
       ).join('');
+    }
+
+    // ===================== WATCHLIST =====================
+
+    function saveWatchlist() {
+      localStorage.setItem('brous_watchlist', JSON.stringify(watchlist));
+    }
+
+    function addToWatchlist(item) {
+      const exists = watchlist.some(w => w.id === item.id && w._mediaType === item._mediaType);
+      if (!exists) {
+        watchlist.push({
+          id: item.id,
+          title: item.title || item.name,
+          _mediaType: item._mediaType || 'movie',
+          poster_path: item.poster_path,
+          release_date: item.release_date || item.first_air_date,
+          vote_average: item.vote_average
+        });
+        saveWatchlist();
+        renderWatchlist();
+      }
+    }
+
+    function removeFromWatchlist(id, mediaType) {
+      watchlist = watchlist.filter(w => !(w.id === id && w._mediaType === mediaType));
+      saveWatchlist();
+      renderWatchlist();
+    }
+
+    function renderWatchlist() {
+      const container = document.getElementById('my-list-content');
+      if (!container) return;
+
+      if (watchlist.length === 0) {
+        container.innerHTML = `<div class="text-sm text-zinc-400">Your list is empty. Add titles from search or Discover results.</div>`;
+        return;
+      }
+
+      let html = '';
+      watchlist.forEach(item => {
+        const year = (item.release_date || '').slice(0, 4);
+        html += `
+          <div class="flex items-center justify-between bg-zinc-950 border border-zinc-800 rounded-2xl p-3">
+            <div class="flex items-center gap-3">
+              ${item.poster_path ? `<img src="https://image.tmdb.org/t/p/w92${item.poster_path}" class="w-10 h-14 rounded-lg object-cover">` : ''}
+              <div>
+                <div class="font-medium">${item.title}</div>
+                <div class="text-xs text-zinc-400">${year} · ${item._mediaType === 'tv' ? 'TV' : 'Movie'}</div>
+              </div>
+            </div>
+            <button onclick="removeFromWatchlist(${item.id}, '${item._mediaType}')" 
+                    class="text-red-400 hover:text-red-300 text-sm px-3 py-1">Remove</button>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // ===================== MODAL =====================
+
+    let currentModalItem = null;
+
+    async function openModal(item) {
+      currentModalItem = item;
+      const modal = document.getElementById('detail-modal');
+      const titleEl = document.getElementById('modal-title');
+      const metaEl = document.getElementById('modal-meta');
+      const overviewEl = document.getElementById('modal-overview');
+      const genresEl = document.getElementById('modal-genres');
+      const availEl = document.getElementById('modal-availability');
+      const addBtn = document.getElementById('modal-add-button');
+
+      modal.classList.remove('hidden');
+      titleEl.textContent = item.title || item.name || 'Untitled';
+      metaEl.innerHTML = '';
+
+      const isMovie = (item._mediaType || 'movie') === 'movie';
+      const mediaPath = isMovie ? 'movie' : 'tv';
+
+      try {
+        // Fetch richer details
+        const detailRes = await fetch(`https://api.themoviedb.org/3/${mediaPath}/${item.id}?api_key=${loadTMDBKey()}`);
+        const detail = await detailRes.json();
+
+        metaEl.innerHTML = `
+          ${detail.release_date || detail.first_air_date ? (detail.release_date || detail.first_air_date).slice(0,4) + ' · ' : ''}
+          ${detail.vote_average ? detail.vote_average.toFixed(1) + ' ★ · ' : ''}
+          ${isMovie ? (detail.runtime ? detail.runtime + ' min' : '') : (detail.number_of_seasons ? detail.number_of_seasons + ' seasons' : '')}
+        `;
+
+        overviewEl.textContent = detail.overview || 'No overview available.';
+
+        genresEl.innerHTML = (detail.genres || []).map(g => 
+          `<span class="text-xs px-2.5 py-1 bg-zinc-800 rounded-2xl">${g.name}</span>`
+        ).join('');
+
+      } catch (e) {
+        overviewEl.textContent = 'Could not load additional details.';
+      }
+
+      // Availability
+      if (item.providers) {
+        let availHtml = '';
+        const groups = { stream: item.providers.flatrate || [], rent: item.providers.rent || [], buy: item.providers.buy || [] };
+        Object.entries(groups).forEach(([type, items]) => {
+          if (!items.length) return;
+          const label = type === 'stream' ? 'Streaming' : type.charAt(0).toUpperCase() + type.slice(1);
+          availHtml += `<div class="mb-2"><div class="text-xs text-emerald-400 mb-1">${label}</div>`;
+          items.forEach(p => {
+            const name = getProviderName(p);
+            availHtml += `<span class="inline-block mr-2 mb-1 text-sm">${name}</span>`;
+          });
+          availHtml += `</div>`;
+        });
+        availEl.innerHTML = availHtml || 'No availability data';
+      } else {
+        availEl.innerHTML = 'No availability data';
+      }
+
+      // Add to list button
+      const inList = watchlist.some(w => w.id === item.id && w._mediaType === item._mediaType);
+      addBtn.textContent = inList ? 'In My List' : 'Add to My List';
+      addBtn.disabled = inList;
+      addBtn.onclick = () => {
+        addToWatchlist(item);
+        addBtn.textContent = 'Added!';
+        setTimeout(() => closeModal(), 800);
+      };
+    }
+
+    function closeModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    // Make cards clickable and add watchlist buttons
+    function enhanceCard(card, item) {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        openModal(item);
+      });
     }
 
     function saveTMDBKey(showFeedback = true) {
@@ -862,8 +1070,28 @@
                 </div>
               </div>
               <div class="mt-4">${html}</div>
+
             </div>
           </div>`;
+        enhanceCard(card, m);
+
+        // Add to List button (separate so we can control events cleanly)
+        const addBtnContainer = document.createElement('div');
+        addBtnContainer.className = 'mt-3 flex justify-end';
+        const addBtn = document.createElement('button');
+        addBtn.className = 'text-xs px-3 py-1 rounded-2xl border border-zinc-600 hover:bg-zinc-800 text-zinc-300';
+        addBtn.textContent = '+ Add to List';
+        addBtn.onclick = (e) => {
+          e.stopImmediatePropagation();
+          addToWatchlist(m);
+          addBtn.textContent = 'Added!';
+          setTimeout(() => {
+            addBtn.textContent = '+ Add to List';
+          }, 1200);
+        };
+        addBtnContainer.appendChild(addBtn);
+        card.appendChild(addBtnContainer);
+
         container.appendChild(card);
       });
     }
@@ -882,7 +1110,24 @@
 
       // Initialize Search type
       setSearchType('movie');
+
+      // Watchlist
+      renderWatchlist();
+
+      const myListDetails = document.getElementById('my-list-details');
+      if (myListDetails) {
+        myListDetails.addEventListener('toggle', () => {
+          if (myListDetails.open) renderWatchlist();
+        });
+      }
     }
+
+    // Re-render watchlist when adding from anywhere
+    const originalAddToWatchlist = addToWatchlist;
+    window.addToWatchlist = function(item) {
+      originalAddToWatchlist(item);
+      renderWatchlist();
+    };
 
     // PWA Install support (especially useful on Android)
     let deferredPrompt;
