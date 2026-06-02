@@ -1,59 +1,109 @@
 /**
- * Brous - Password Protected + TMDB Proxy Worker
- * 
- * This Worker does two things:
- * 1. Requires a simple shared password (Basic Auth)
- * 2. Proxies TMDB API requests so your real API key is never exposed in the browser
+ * Horror Roki - Cloudflare Worker (Generic TMDB Proxy + Basic Auth)
+ *
+ * This Worker acts as a secure proxy for TMDB while requiring a simple shared password.
+ *
+ * Secrets required:
+ * - TMDB_TOKEN: Your TMDB v3 API Key or v4 Read Access Token
+ * - PASSWORD: The shared password for Basic Auth
+ *
+ * All TMDB calls should now go through:
+ *   /api/tmdb/{path}
+ * Example:
+ *   /api/tmdb/movie/123/recommendations
+ *   /api/tmdb/search/movie?query=the%20thing
  */
 
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const pathname = url.pathname;
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400',
+};
 
-    // 1. Check password authentication first
-    const auth = request.headers.get('Authorization');
-    if (!auth || !isAuthorized(auth, env)) {
-      return new Response('Unauthorized - Please enter the password', {
+export default {
+  async fetch(request, env) {
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: CORS_HEADERS });
+    }
+
+    // === 1. Authentication Check ===
+    if (!isAuthenticated(request, env)) {
+      return new Response('Unauthorized - Please log in', {
         status: 401,
         headers: {
-          'WWW-Authenticate': 'Basic realm="Brous"',
-          'Content-Type': 'text/plain',
+          ...CORS_HEADERS,
+          'WWW-Authenticate': 'Basic realm="Horror Roki"',
         },
       });
     }
 
-    // 2. Handle TMDB API proxy requests
-    // Frontend should call: /api/tmdb/3/...
-    if (pathname.startsWith('/api/tmdb/')) {
-      const tmdbPath = pathname.replace('/api/tmdb', ''); // e.g. /3/search/movie
-      const tmdbUrl = new URL(tmdbPath + url.search, 'https://api.themoviedb.org');
+    const url = new URL(request.url);
+    const pathname = url.pathname;
 
-      // Add the real secret API key
-      tmdbUrl.searchParams.set('api_key', env.TMDB_API_KEY);
+    // === 2. Generic TMDB Proxy ===
+    if (pathname.startsWith('/api/tmdb/')) {
+      const tmdbPath = pathname.replace('/api/tmdb', ''); // e.g. /movie/123/recommendations
+      const tmdbUrl = new URL(`https://api.themoviedb.org/3${tmdbPath}${url.search}`);
+
+      const headers = {
+        'Accept': 'application/json',
+      };
+
+      // Add TMDB authentication
+      if (!env.TMDB_TOKEN) {
+        return jsonError('TMDB_TOKEN secret is not configured', 500);
+      }
+
+      if (env.TMDB_TOKEN.startsWith('eyJ')) {
+        // v4 Read Access Token
+        headers['Authorization'] = `Bearer ${env.TMDB_TOKEN}`;
+      } else {
+        // v3 API Key
+        tmdbUrl.searchParams.set('api_key', env.TMDB_TOKEN);
+      }
 
       // Forward the request to TMDB
-      const tmdbRequest = new Request(tmdbUrl.toString(), {
+      const tmdbResponse = await fetch(tmdbUrl.toString(), {
         method: request.method,
-        headers: request.headers,
+        headers,
         body: request.body,
+        cf: {
+          cacheTtl: 300,           // Cache for 5 minutes
+          cacheEverything: true,
+        },
       });
 
-      // Remove the original api_key if the frontend sent one (for safety)
-      tmdbRequest.headers.delete('x-api-key'); // just in case
+      const data = await tmdbResponse.json();
 
-      return fetch(tmdbRequest);
+      return new Response(JSON.stringify(data), {
+        status: tmdbResponse.status,
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS,
+        },
+      });
     }
 
-    // 3. For everything else, proxy to the actual Brous site on Pages
-    const pagesUrl = new URL(request.url);
-    pagesUrl.hostname = 'brous-streaming.pages.dev';
+    // === 3. Health Check / Info ===
+    if (pathname === '/' || pathname === '/api' || pathname === '/api/health') {
+      return jsonResponse({
+        ok: true,
+        service: 'Horror Roki - TMDB Proxy + Auth',
+        version: '2.0.0',
+        note: 'Generic TMDB proxy. All calls go through /api/tmdb/...',
+      });
+    }
 
-    return fetch(pagesUrl, request);
+    return jsonError('Not found', 404);
   },
 };
 
-function isAuthorized(authHeader, env) {
+// ===================== Helpers =====================
+
+function isAuthenticated(request, env) {
+  const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Basic ')) {
     return false;
   }
@@ -61,11 +111,24 @@ function isAuthorized(authHeader, env) {
   try {
     const base64Credentials = authHeader.split(' ')[1];
     const credentials = atob(base64Credentials);
-    const [username, password] = credentials.split(':');
+    const [, password] = credentials.split(':');
 
-    // We only check the password. Username can be anything.
     return password === env.PASSWORD;
-  } catch (e) {
+  } catch (err) {
     return false;
   }
+}
+
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+function jsonError(message, status = 400) {
+  return jsonResponse({ error: message }, status);
 }
