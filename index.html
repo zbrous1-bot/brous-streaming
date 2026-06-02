@@ -412,7 +412,8 @@
 
     // Watchlist
     let watchlist = JSON.parse(localStorage.getItem('brous_watchlist') || '[]');
-    let watchedIds = new Set(watchlist.map(w => w.id));
+    // Use composite key to safely handle movie vs tv with potentially overlapping numeric ids
+    let watchedIds = new Set(watchlist.map(w => `${w.id}:${w._mediaType || 'movie'}`));
     let lastRenderedItems = [];
 
     const RATING_OPTIONS = [0, 6, 7, 7.5, 8];
@@ -694,20 +695,38 @@
           release_date: item.release_date || item.first_air_date,
           vote_average: item.vote_average
         });
-        watchedIds.add(item.id);
+        const key = `${item.id}:${item._mediaType || 'movie'}`;
+        watchedIds.add(key);
         saveWatchlist();
         renderWatchlist();
 
-        // Re-render current results to remove the item if it was in discover/search
-        if (lastRenderedItems.length > 0) {
-          renderResults(lastRenderedItems);
-        }
+        // Explicit removal from current discover/search results to prevent duplicates
+        // This is the dedicated removal function for items that should disappear from
+        // the current view (e.g. discover recommendations) once marked watched.
+        removeFromCurrentResults(item.id, item._mediaType || 'movie');
       }
+    }
+
+    // Dedicated removal function for items that should disappear from discover/search
+    // after being selected as watched. This prevents duplication in the current results view.
+    // Call this (or wire it into your "mark as watched" / add to library flow) whenever a title
+    // is added to the watched library. It cleans both the in-memory cache and the DOM view.
+    function removeFromCurrentResults(id, mediaType = 'movie') {
+      const key = `${id}:${mediaType}`;
+      // Remove from the cached list used for re-renders
+      lastRenderedItems = lastRenderedItems.filter(m => {
+        const mKey = `${m.id}:${m._mediaType || 'movie'}`;
+        return mKey !== key;
+      });
+
+      // Re-render the filtered list (reliable and simple)
+      renderResults(lastRenderedItems);
     }
 
     function removeFromWatchlist(id, mediaType) {
       watchlist = watchlist.filter(w => !(w.id === id && w._mediaType === mediaType));
-      watchedIds.delete(id);
+      const keyToDelete = `${id}:${mediaType || 'movie'}`;
+      watchedIds.delete(keyToDelete);
       saveWatchlist();
       renderWatchlist();
     }
@@ -972,7 +991,10 @@
 
       // Filter out watched items from discover/search results to prevent duplicates
       // (watched items are in My List / watched library)
-      items = items.filter(m => !watchedIds.has(m.id));
+      items = items.filter(m => {
+        const key = `${m.id}:${m._mediaType || 'movie'}`;
+        return !watchedIds.has(key);
+      });
 
       items.forEach(m => {
         const title = m.title || m.name || 'Untitled';
