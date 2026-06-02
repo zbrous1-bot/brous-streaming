@@ -412,6 +412,8 @@
 
     // Watchlist
     let watchlist = JSON.parse(localStorage.getItem('brous_watchlist') || '[]');
+    let watchedIds = new Set(watchlist.map(w => w.id));
+    let lastRenderedItems = [];
 
     const RATING_OPTIONS = [0, 6, 7, 7.5, 8];
     const DECADES = [
@@ -692,13 +694,20 @@
           release_date: item.release_date || item.first_air_date,
           vote_average: item.vote_average
         });
+        watchedIds.add(item.id);
         saveWatchlist();
         renderWatchlist();
+
+        // Re-render current results to remove the item if it was in discover/search
+        if (lastRenderedItems.length > 0) {
+          renderResults(lastRenderedItems);
+        }
       }
     }
 
     function removeFromWatchlist(id, mediaType) {
       watchlist = watchlist.filter(w => !(w.id === id && w._mediaType === mediaType));
+      watchedIds.delete(id);
       saveWatchlist();
       renderWatchlist();
     }
@@ -958,6 +967,12 @@
       if (initial) initial.style.display = 'none';
       container.innerHTML = '';
       const services = getUserServices();
+
+      lastRenderedItems = items;
+
+      // Filter out watched items from discover/search results to prevent duplicates
+      // (watched items are in My List / watched library)
+      items = items.filter(m => !watchedIds.has(m.id));
 
       items.forEach(m => {
         const title = m.title || m.name || 'Untitled';
