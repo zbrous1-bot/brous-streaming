@@ -184,7 +184,7 @@
                 class="hidden text-[10px] px-3 py-1.5 rounded-3xl bg-white text-black font-medium active:bg-zinc-200">
           Install
         </button>
-        <button onclick="managePassword()" 
+        <button onclick="managePassword()" id="pass-btn"
                 class="text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
                 title="Set or change the shared password for the API (required for search &amp; discover)">
           🔐 Pass
@@ -1227,7 +1227,7 @@
     }
 
     // Password button hint
-    const passBtn = document.querySelector('button[title*="shared password"]');
+    const passBtn = document.getElementById('pass-btn');
     if (passBtn && localStorage.getItem('brous_password')) {
       passBtn.textContent = '🔐 OK';
       passBtn.title = 'Password saved for this browser. Click to change or clear.';
