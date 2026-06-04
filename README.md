@@ -32,6 +32,43 @@ Brous is a completely static site (no backend). You can host it anywhere that su
 - Automatic deployments from GitHub
 - Excellent global performance
 
+**Exact setup for this repo:**
+
+1. In Cloudflare dashboard → Pages → Create a project → Connect to Git → select the `brous-streaming` repo.
+2. Set:
+   - **Root directory**: `deploy`
+   - **Build command**: (leave empty or `echo "static site"`)
+   - **Build output directory**: `.` (or `deploy` depending on your Pages config — the files in `deploy/` become the site root)
+3. Save and deploy. Future `git push` to `main` will auto-deploy.
+
+**Important: The Cloudflare Worker (required for API calls)**
+
+The app calls `/api/tmdb/...` which must be handled by a Worker that:
+- Adds the real TMDB key (never exposed to browser)
+- Enforces a simple shared password via Basic Auth
+
+- The Worker source is in `deploy/cloudflare-worker/worker.js`
+- Deploy it as a separate Worker in Cloudflare (use Wrangler or the dashboard "Upload" with the .js file).
+- In the **Worker** settings (not Pages):
+  - Add **Secrets**:
+    - `TMDB_TOKEN` = your TMDB API key (v3) **or** v4 Read Access Token (starts with `eyJ...`)
+    - `PASSWORD` = a simple shared password (e.g. `mysecret123`) — tell the <4 people who use the app
+  - Add a **Route** (Triggers → Routes) so the Worker runs on your Pages domain:
+    - Pattern: `your-project.pages.dev/api/tmdb*`
+    - (Also add for any custom domain you use)
+
+Once deployed:
+- Visit your Pages URL.
+- Click the **🔐 Pass** button (top right) and enter the exact `PASSWORD` you set in the Worker secret.
+- The first time you use Discover or Search it will also prompt.
+- The button turns into "🔐 OK" when a password is saved for that browser.
+
+If you see "Error loading results..." it almost always means:
+- Password not entered yet in the app (use the button), or
+- Wrong value for the `PASSWORD` secret, or
+- `TMDB_TOKEN` secret missing, or
+- The Worker Route is not set (so /api calls 404 or hit Pages directly).
+
 ### Other Good Options
 - GitHub Pages
 - Netlify
