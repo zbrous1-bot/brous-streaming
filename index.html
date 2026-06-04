@@ -713,14 +713,25 @@
     // is added to the watched library. It cleans both the in-memory cache and the DOM view.
     function removeFromCurrentResults(id, mediaType = 'movie') {
       const key = `${id}:${mediaType}`;
+      // Also clean the master accumulation list (important for "load more" / pagination
+      // and so that re-running Discover or filters doesn't bring watched items back)
+      currentDiscoverResults = currentDiscoverResults.filter(m => {
+        const mKey = `${m.id}:${m._mediaType || 'movie'}`;
+        return mKey !== key;
+      });
+
       // Remove from the cached list used for re-renders
       lastRenderedItems = lastRenderedItems.filter(m => {
         const mKey = `${m.id}:${m._mediaType || 'movie'}`;
         return mKey !== key;
       });
 
-      // Re-render the filtered list (reliable and simple)
-      renderResults(lastRenderedItems);
+      // Re-render the filtered list (reliable and simple). Prefer the cleaned master list.
+      if (currentDiscoverResults.length > 0) {
+        renderResults(currentDiscoverResults);
+      } else {
+        renderResults(lastRenderedItems);
+      }
     }
 
     function removeFromWatchlist(id, mediaType) {
