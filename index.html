@@ -1173,6 +1173,10 @@
         });
       }
 
+      // Helpful console note for first-time setup (password is required for the Worker)
+      if (!localStorage.getItem('brous_password')) {
+        console.log('%c[Brous] No API password set yet. Click the 🔐 Pass button (top right) or load Discover/Search to enter the shared password.', 'color:#f59e0b');
+      }
     }
 
     // Re-render watchlist when adding from anywhere
