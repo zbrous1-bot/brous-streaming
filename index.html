@@ -1199,6 +1199,11 @@
       apiPassword = prompt('Enter the shared Brous password:') || '';
       if (apiPassword) {
         localStorage.setItem('brous_password', apiPassword);
+        const btn = document.getElementById('pass-btn');
+        if (btn) {
+          btn.textContent = '🔐 OK';
+          btn.title = 'Password saved for this browser. Click to change or clear.';
+        }
         alert('Password saved for this browser. Try loading Discover or Search again.');
       }
     }
