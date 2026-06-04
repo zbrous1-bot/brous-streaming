@@ -1,5 +1,5 @@
 /**
- * Horror Roki - Cloudflare Worker (Generic TMDB Proxy + Basic Auth)
+ * Brous - Cloudflare Worker (Generic TMDB Proxy + Basic Auth)
  *
  * This Worker acts as a secure proxy for TMDB while requiring a simple shared password.
  *
@@ -34,7 +34,7 @@ export default {
         status: 401,
         headers: {
           ...CORS_HEADERS,
-          'WWW-Authenticate': 'Basic realm="Horror Roki"',
+          'WWW-Authenticate': 'Basic realm="Brous"',
         },
       });
     }
@@ -90,7 +90,7 @@ export default {
     if (pathname === '/' || pathname === '/api' || pathname === '/api/health') {
       return jsonResponse({
         ok: true,
-        service: 'Horror Roki - TMDB Proxy + Auth',
+        service: 'Brous - TMDB Proxy + Auth',
         version: '2.0.0',
         note: 'Generic TMDB proxy. All calls go through /api/tmdb/...',
       });

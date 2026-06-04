@@ -184,6 +184,11 @@
                 class="hidden text-[10px] px-3 py-1.5 rounded-3xl bg-white text-black font-medium active:bg-zinc-200">
           Install
         </button>
+        <button onclick="managePassword()" 
+                class="text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
+                title="Set or change the shared password for the API (required for search &amp; discover)">
+          🔐 Pass
+        </button>
       </div>
     </div>
 
@@ -416,6 +421,44 @@
     let watchedIds = new Set(watchlist.map(w => `${w.id}:${w._mediaType || 'movie'}`));
     let lastRenderedItems = [];
 
+    // === Password for Cloudflare Worker (Basic Auth) ===
+    // The Worker requires a shared password on all /api/tmdb calls.
+    // We store it in localStorage (per-browser). Username is ignored by the Worker.
+    let apiPassword = localStorage.getItem('brous_password') || '';
+
+    function getAuthHeaders() {
+      if (!apiPassword) {
+        apiPassword = prompt('Enter the shared Brous password:') || '';
+        if (apiPassword) {
+          localStorage.setItem('brous_password', apiPassword);
+        }
+      }
+      if (!apiPassword) return {};
+      // Worker accepts anything:password (username ignored)
+      return {
+        'Authorization': 'Basic ' + btoa('user:' + apiPassword)
+      };
+    }
+
+    async function apiFetch(path) {
+      const headers = getAuthHeaders();
+      const res = await fetch(path, { headers });
+      if (res.status === 401) {
+        // Bad or missing password
+        localStorage.removeItem('brous_password');
+        apiPassword = '';
+        const err = new Error('Unauthorized (wrong or missing password)');
+        err.status = 401;
+        throw err;
+      }
+      if (!res.ok) {
+        const err = new Error('API error ' + res.status);
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    }
+
     const RATING_OPTIONS = [0, 6, 7, 7.5, 8];
     const DECADES = [
       {label: '2020s', gte: '2020-01-01', lte: '2029-12-31'},
@@ -586,8 +629,7 @@
       }
 
       try {
-        const res = await fetch(url);
-        const data = await res.json();
+        const data = await apiFetch(url);
 
         if (!data.results?.length) {
           if (reset) {
@@ -604,12 +646,12 @@
           const isMovie = currentDiscoverType === 'movie';
           const mediaPath = isMovie ? 'movie' : 'tv';
           try {
-            const [provRes, extRes] = await Promise.all([
-              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/watch/providers`),
-              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/external_ids`)
+            const [provData, extData] = await Promise.all([
+              apiFetch(`/api/tmdb/3/${mediaPath}/${item.id}/watch/providers`),
+              apiFetch(`/api/tmdb/3/${mediaPath}/${item.id}/external_ids`)
             ]);
-            const providers = (await provRes.json()).results?.US || null;
-            const external = await extRes.json();
+            const providers = provData.results?.US || null;
+            const external = extData;
             return { 
               ...item, 
               providers, 
@@ -636,7 +678,10 @@
 
       } catch (e) {
         if (reset) {
-          container.innerHTML = `<div class="text-center py-6 text-red-400">Error loading results. Check your key and connection.</div>`;
+          const msg = (e.status === 401 || e.message.includes('Unauthorized') || e.message.includes('password'))
+            ? 'Password required or incorrect. Click the 🔐 Pass button above to set it.'
+            : 'Error loading results. Check password (🔐 Pass button) or connection.';
+          container.innerHTML = `<div class="text-center py-6 text-red-400">${msg}</div>`;
         }
         document.getElementById('load-more-container').classList.add('hidden');
       }
@@ -793,8 +838,7 @@
 
       try {
         // Fetch richer details
-        const detailRes = await fetch(`/api/tmdb/3/${mediaPath}/${item.id}`);
-        const detail = await detailRes.json();
+        const detail = await apiFetch(`/api/tmdb/3/${mediaPath}/${item.id}`);
 
         metaEl.innerHTML = `
           ${detail.release_date || detail.first_air_date ? (detail.release_date || detail.first_air_date).slice(0,4) + ' · ' : ''}
@@ -809,7 +853,7 @@
         ).join('');
 
       } catch (e) {
-        overviewEl.textContent = 'Could not load additional details.';
+        overviewEl.textContent = 'Could not load additional details (check password with 🔐 Pass button).';
       }
 
       // Availability
@@ -936,8 +980,7 @@
       const mediaPath = isMovie ? 'movie' : 'tv';
 
       try {
-        const searchRes = await fetch(`/api/tmdb/3/search/${searchEndpoint}?query=${encodeURIComponent(query)}`);
-        const searchData = await searchRes.json();
+        const searchData = await apiFetch(`/api/tmdb/3/search/${searchEndpoint}?query=${encodeURIComponent(query)}`);
 
         if (searchData.success === false) {
           container.innerHTML = `<div class="text-center py-6 text-red-400">TMDB error: ${searchData.status_message}</div>`;
@@ -956,12 +999,12 @@
         const top = searchData.results.slice(0, 6);
         const enriched = await Promise.all(top.map(async item => {
           try {
-            const [provRes, extRes] = await Promise.all([
-              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/watch/providers`),
-              fetch(`/api/tmdb/3/${mediaPath}/${item.id}/external_ids`)
+            const [provData, extData] = await Promise.all([
+              apiFetch(`/api/tmdb/3/${mediaPath}/${item.id}/watch/providers`),
+              apiFetch(`/api/tmdb/3/${mediaPath}/${item.id}/external_ids`)
             ]);
-            const providers = (await provRes.json()).results?.US || null;
-            const external = await extRes.json();
+            const providers = provData.results?.US || null;
+            const external = extData;
             return { 
               ...item, 
               providers, 
@@ -977,7 +1020,10 @@
         const activeFilters = document.getElementById('active-filters');
         if (activeFilters) activeFilters.classList.add('hidden');
       } catch (e) {
-        container.innerHTML = `<div class="text-center py-6 text-red-400">Error fetching data. Check your internet connection.</div>`;
+        const msg = (e.status === 401 || e.message.includes('Unauthorized') || e.message.includes('password'))
+          ? 'Password required or incorrect. Click the 🔐 Pass button above to set it.'
+          : 'Error fetching data. Check password (🔐 Pass button) or connection.';
+        container.innerHTML = `<div class="text-center py-6 text-red-400">${msg}</div>`;
       }
     }
 
@@ -1136,6 +1182,23 @@
       renderWatchlist();
     };
 
+    function managePassword() {
+      const current = localStorage.getItem('brous_password');
+      if (current) {
+        if (confirm('Password is currently set. Clear it and enter a new one?')) {
+          localStorage.removeItem('brous_password');
+          apiPassword = '';
+        } else {
+          return;
+        }
+      }
+      apiPassword = prompt('Enter the shared Brous password:') || '';
+      if (apiPassword) {
+        localStorage.setItem('brous_password', apiPassword);
+        alert('Password saved for this browser. Try loading Discover or Search again.');
+      }
+    }
+
     // PWA Install support (especially useful on Android)
     let deferredPrompt;
     const installBtn = document.getElementById('install-btn');
@@ -1161,6 +1224,13 @@
       setTimeout(() => {
         if (deferredPrompt) installBtn.classList.remove('hidden');
       }, 3000);
+    }
+
+    // Password button hint
+    const passBtn = document.querySelector('button[title*="shared password"]');
+    if (passBtn && localStorage.getItem('brous_password')) {
+      passBtn.textContent = '🔐 OK';
+      passBtn.title = 'Password saved for this browser. Click to change or clear.';
     }
 
     window.onload = boot;
