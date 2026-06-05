@@ -1,17 +1,15 @@
 /**
- * Brous - Cloudflare Worker (Generic TMDB Proxy + Basic Auth)
+ * Brous - Cloudflare Worker (Generic TMDB Proxy + LLM Proxy + Basic Auth)
  *
- * This Worker acts as a secure proxy for TMDB while requiring a simple shared password.
+ * This Worker acts as a secure proxy for TMDB and xAI LLM while requiring a simple shared password.
  *
  * Secrets required:
  * - TMDB_TOKEN: Your TMDB v3 API Key or v4 Read Access Token
+ * - XAI_TOKEN: Your xAI API key (for the Curator chatbot)
  * - PASSWORD: The shared password for Basic Auth
  *
- * All TMDB calls should now go through:
- *   /api/tmdb/{path}
- * Example:
- *   /api/tmdb/movie/123/recommendations
- *   /api/tmdb/search/movie?query=the%20thing
+ * TMDB calls: /api/tmdb/{path}
+ * LLM calls (POST): /api/llm  (body = OpenAI compatible chat.completions payload, key injected server-side)
  */
 
 const CORS_HEADERS = {
@@ -86,13 +84,71 @@ export default {
       });
     }
 
-    // === 3. Health Check / Info ===
+    // === 3. LLM Proxy (for The Curator chatbot; OpenAI-compatible, key injected server-side) ===
+    if (pathname === '/api/llm' || pathname === '/api/llm/') {
+      if (request.method !== 'POST') {
+        return jsonError('Method not allowed for /api/llm; use POST with chat.completions payload', 405);
+      }
+      if (!env.XAI_TOKEN) {
+        return jsonError('XAI_TOKEN secret not configured (Curator requires it in Worker env)', 500);
+      }
+
+      let body;
+      try {
+        body = await request.json();
+      } catch (e) {
+        return jsonError('Invalid JSON in request body', 400);
+      }
+
+      // Never trust/forward any key from client
+      delete body.api_key;
+      delete body.key;
+      delete body.openai_api_key;
+
+      // Default to xAI endpoint (supports other OpenAI-compat if you extend worker with more secrets + routing)
+      const llmUrl = 'https://api.x.ai/v1/chat/completions';
+
+      const llmResponse = await fetch(llmUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.XAI_TOKEN}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      const contentType = llmResponse.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream') || (body && body.stream)) {
+        // Pipe streaming response for real-time tokens in chat
+        return new Response(llmResponse.body, {
+          status: llmResponse.status,
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            ...CORS_HEADERS,
+          },
+        });
+      }
+
+      const data = await llmResponse.json();
+      return new Response(JSON.stringify(data), {
+        status: llmResponse.status,
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS,
+        },
+      });
+    }
+
+    // === 4. Health Check / Info ===
     if (pathname === '/' || pathname === '/api' || pathname === '/api/health') {
       return jsonResponse({
         ok: true,
-        service: 'Brous - TMDB Proxy + Auth',
-        version: '2.0.0',
-        note: 'Generic TMDB proxy. All calls go through /api/tmdb/...',
+        service: 'Brous / Horror Roki - TMDB + LLM Proxy + Auth',
+        version: '3.0.0',
+        note: 'TMDB via /api/tmdb/* ; LLM (Curator) via POST /api/llm . Password required for both.',
+        features: ['tmdb-proxy', 'llm-proxy-xai', 'basic-auth'],
       });
     }
 

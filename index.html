@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#18181b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Brous">
+  <meta name="apple-mobile-web-app-title" content="Horror Roki">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>Brous — Find Where to Watch</title>
+  <title>Horror Roki • Find your next nightmare</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%2318181b'/%3E%3Ctext x='90' y='115' font-size='80' fill='white' text-anchor='middle' font-family='system-ui, sans-serif' font-weight='700'%3EB%3C/text%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -168,6 +168,75 @@
     .filter-chip-active:active {
       transform: scale(0.98);
     }
+
+    /* Horror Roki accents: blood-red for nightmares, danger, watched actions */
+    .horror-accent {
+      color: #f87171;
+    }
+    .btn-nightmare {
+      background-color: #991b1b;
+      color: white;
+    }
+    .btn-nightmare:hover { background-color: #b91c1c; }
+    .btn-nightmare:active { background-color: #7f1d1d; }
+
+    .mood-chip {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid #3f3f46;
+      background: #18181b;
+      color: #d1d5db;
+      transition: all .1s ease;
+    }
+    .mood-chip.active, .mood-chip:active {
+      background: #7f1d1d;
+      border-color: #b91c1c;
+      color: white;
+      transform: scale(1.02);
+    }
+
+    .library-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: #111113;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+    }
+
+    .curator-msg {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      padding: 10px 14px;
+      border-radius: 14px;
+      margin-bottom: 8px;
+      max-width: 82%;
+    }
+    .curator-msg.user {
+      background: #27272a;
+      margin-left: auto;
+      border-color: #52525b;
+    }
+    .curator-avatar {
+      width: 22px; height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(145deg, #7f1d1d, #450a0a);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+
+    .suggested-card {
+      background: #0f0f11;
+      border: 1px solid #3f3f46;
+      border-radius: 12px;
+      padding: 8px;
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-200 no-pull-refresh">
@@ -176,8 +245,9 @@
     <!-- Header -->
     <div class="mb-6 sm:mb-8 flex items-end justify-between">
       <div>
-        <h1 class="text-5xl font-semibold tracking-[-2.5px] text-white">Brous</h1>
-        <p class="text-zinc-400 text-[14px] mt-1 tracking-tight">Find where to watch movies &amp; TV</p>
+        <h1 class="text-5xl font-semibold tracking-[-2.5px] text-white">Horror Roki</h1>
+        <p class="text-zinc-400 text-[14px] mt-1 tracking-tight">Find your next <span class="text-red-400/90">nightmare</span>.</p>
+        <p class="text-[11px] text-zinc-500 mt-0.5">Personal horror recommendations. No server required.</p>
       </div>
       <div class="flex items-center gap-2">
         <button onclick="installPWA()" id="install-btn"
@@ -186,10 +256,22 @@
         </button>
         <button onclick="managePassword()" id="pass-btn"
                 class="text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
-                title="Set or change the shared password for the API (required for search &amp; discover)">
+                title="Set or change the shared password for the API (required for search, discover, recs &amp; Curator)">
           🔐 Pass
         </button>
+        <button onclick="showSettings()" id="settings-btn"
+                class="text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
+                title="LLM settings, backup, import &amp; more">
+          ⚙︎ Settings
+        </button>
       </div>
+    </div>
+
+    <!-- Compact live stats (updates with library) -->
+    <div class="mb-3 px-1 flex gap-4 text-xs text-zinc-400">
+      <span id="stat-watched">Watched: <span class="font-semibold text-zinc-200">0</span></span>
+      <span id="stat-towatch">To Watch: <span class="font-semibold text-zinc-200">0</span></span>
+      <span>Personalized via your library + Curator</span>
     </div>
 
     <!-- Prominent My Services -->
@@ -215,21 +297,21 @@
     <!-- Collapsible Sections -->
     <div class="space-y-3 mb-6">
 
-      <!-- My List -->
+      <!-- My List (quick To Watch / saved for availability lookup) - kept for compatibility with existing flows -->
       <details id="my-list-details" class="modern-card group">
         <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
           <div class="flex items-center gap-3">
-            <i class="fa-solid fa-list text-xl text-zinc-300"></i>
+            <i class="fa-solid fa-list text-xl text-emerald-400"></i>
             <div>
-              <div class="font-semibold">My List</div>
-              <div class="text-xs text-zinc-500">Saved titles you want to watch</div>
+              <div class="font-semibold">Quick List (To Watch)</div>
+              <div class="text-xs text-zinc-500">Saved titles • also appears in full To Watch below</div>
             </div>
           </div>
           <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
         </summary>
         <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
           <div id="my-list-content" class="space-y-3 text-sm">
-            <!-- Populated by JS -->
+            <!-- Populated by JS (legacy watchlist) -->
           </div>
         </div>
       </details>
@@ -270,7 +352,7 @@
     <div class="mb-5">
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
         <div class="flex items-center justify-between mb-3 px-1">
-          <div class="text-[13px] font-medium text-zinc-400">Discover — filter by genre, rating &amp; decade</div>
+          <div class="text-[13px] font-medium text-zinc-400">Discover horror — filter by genre, rating &amp; decade</div>
           <button onclick="clearSelectedGenres()" class="text-[11px] text-zinc-500 hover:text-zinc-400">Clear all</button>
         </div>
         
@@ -336,6 +418,120 @@
       </button>
     </div>
 
+    <!-- Recommended for you (Horror Roki personalized - port of taste boost + mood from current setup) -->
+    <div class="mb-6 mt-2">
+      <div class="flex items-center justify-between mb-2 px-1">
+        <div>
+          <div class="font-semibold text-sm">Recommended for you</div>
+          <div class="text-xs text-zinc-500">Based on what you’ve watched • client-side taste boost</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="refreshRecPool()" 
+                  class="text-[11px] px-3 py-1 rounded-3xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 active:bg-zinc-600">Refresh Pool</button>
+          <button onclick="recomputeRecommendations()" 
+                  class="text-[11px] px-3 py-1 rounded-3xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 active:bg-zinc-600">Recompute</button>
+        </div>
+      </div>
+
+      <!-- Mood / subgenre chips (horror specific, affect client boost + filter) -->
+      <div class="flex flex-wrap gap-1.5 mb-3 px-1" id="mood-chips">
+        <!-- Populated by JS: All + Slow burn, Psychological, Supernatural, Folk, Gory -->
+      </div>
+
+      <div id="recs-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <!-- Populated by renderRecommendations() -->
+      </div>
+      <div id="recs-empty" class="hidden text-center py-6 text-zinc-500 text-sm">
+        No recommendations yet. Add some movies to Your Library (Watched) or hit Refresh Pool.
+      </div>
+      <div id="recs-stats" class="text-[10px] text-zinc-500 px-1 mt-1">Taste profile updates live from Watched (higher weight on 5★).</div>
+    </div>
+
+    <!-- Your Library (To Watch + Watched + Disliked - full lists from current setup, styled like existing My List) -->
+    <div class="space-y-3 mb-6">
+      <details id="library-to-watch" class="modern-card group" open>
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-list text-xl text-emerald-400"></i>
+            <div>
+              <div class="font-semibold">To Watch <span id="to-watch-count" class="text-xs font-normal text-zinc-500">(0)</span></div>
+              <div class="text-xs text-zinc-500">Your upcoming nightmares • batch rate from here or Curator</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="event.stopImmediatePropagation(); pickRandomToWatch()" class="text-[10px] px-2 py-0.5 rounded-2xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800">🎲 Random</button>
+            <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
+          </div>
+        </summary>
+        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
+          <div id="to-watch-content" class="space-y-2 text-sm"></div>
+          <div class="mt-3 text-[11px] text-zinc-500">Items you add here can be rated in batch via The Curator or manually.</div>
+        </div>
+      </details>
+
+      <details id="library-watched" class="modern-card group">
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-check-double text-xl text-zinc-300"></i>
+            <div>
+              <div class="font-semibold">Watched <span id="watched-count" class="text-xs font-normal text-zinc-500">(0)</span></div>
+              <div class="text-xs text-zinc-500">Your library — powers personalized recs &amp; taste profile</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
+        </summary>
+        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
+          <div id="watched-content" class="space-y-2 text-sm"></div>
+        </div>
+      </details>
+
+      <details id="library-disliked" class="modern-card group">
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-thumbs-down text-xl text-red-400/70"></i>
+            <div>
+              <div class="font-semibold">Disliked <span id="disliked-count" class="text-xs font-normal text-zinc-500">(0)</span></div>
+              <div class="text-xs text-zinc-500">Never recommend these again</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
+        </summary>
+        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
+          <div id="disliked-content" class="space-y-2 text-sm"></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- The Curator chat (full port of 👻 Chat with The Curator: streaming, grounding, SUGGESTED cards, BATCH_RATE, explicit clears, live TMDB) -->
+    <div class="mb-6">
+      <div class="modern-card">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+          <div class="flex items-center gap-3">
+            <span class="curator-avatar">👻</span>
+            <div>
+              <div class="font-semibold">The Curator</div>
+              <div class="text-[11px] text-zinc-500">Eternal keeper of horror cinema • grounded in your lists</div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="clearCuratorPicks()" class="text-[10px] px-2.5 py-1 rounded-2xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800">🧹 Clear picks</button>
+            <button onclick="clearCuratorChat()" class="text-[10px] px-2.5 py-1 rounded-2xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800">🪦 Clear chat</button>
+          </div>
+        </div>
+        <div id="curator-messages" class="px-4 py-4 max-h-[320px] overflow-auto text-sm space-y-1 bg-[#111113] rounded-b-3xl"></div>
+        <div class="p-3 border-t border-zinc-800 bg-zinc-950 rounded-b-3xl">
+          <div class="flex gap-2">
+            <input id="curator-input" type="text" placeholder="Whisper to The Curator... (e.g. slow-burn folk horror from my list, no spoilers)"
+                   class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-zinc-400 text-sm rounded-3xl px-4 py-2 outline-none"
+                   onkeypress="if (event.key === 'Enter') sendToCurator()">
+            <button onclick="sendToCurator()" 
+                    class="px-4 py-2 bg-red-900 hover:bg-red-800 active:bg-red-950 text-white text-sm font-medium rounded-3xl">Send</button>
+          </div>
+          <div id="curator-status" class="text-[10px] text-zinc-500 mt-1.5 px-1">Grounded • streaming via Worker • history kept until explicit clear</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Detail Modal -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div class="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-auto">
@@ -374,8 +570,8 @@
     <!-- Initial state / welcome message -->
     <div id="initial-state" class="text-center py-12 text-zinc-400">
       <i class="fa-solid fa-search text-4xl mb-4 opacity-40"></i>
-      <p class="text-lg text-zinc-300">Search above or use Discover below</p>
-      <p class="text-sm mt-1">Filter by genre, rating, decade &amp; your services.</p>
+      <p class="text-lg text-zinc-300">Search above or use Discover / Recommended below</p>
+      <p class="text-sm mt-1">Horror recs powered by your watched library + The Curator.</p>
     </div>
 
   </div>
@@ -415,11 +611,36 @@
     let currentDiscoverPage = 1;
     let currentDiscoverResults = [];
 
-    // Watchlist
+    // Watchlist (legacy quick list, kept working for existing search/discover "My List" flows)
     let watchlist = JSON.parse(localStorage.getItem('brous_watchlist') || '[]');
     // Use composite key to safely handle movie vs tv with potentially overlapping numeric ids
     let watchedIds = new Set(watchlist.map(w => `${w.id}:${w._mediaType || 'movie'}`));
     let lastRenderedItems = [];
+
+    // === Horror Roki full personal state (from Streamlit current setup) ===
+    // Stored only in browser (localStorage). Matches backup/restore contract (lists + chat_history + llm_config no secrets).
+    let toWatchList = JSON.parse(localStorage.getItem('horror_roki_towatch') || '[]');
+    let watchedList = JSON.parse(localStorage.getItem('horror_roki_watched') || '[]');
+    let dislikedList = JSON.parse(localStorage.getItem('horror_roki_disliked') || '[]');
+    let chatHistory = JSON.parse(localStorage.getItem('horror_roki_chat') || '[]');
+    let llmConfig = JSON.parse(localStorage.getItem('horror_roki_llm') || JSON.stringify({
+      provider: 'xAI', base_url: 'https://api.x.ai/v1', model: 'grok-4.3',
+      max_history_turns: 12, max_response_tokens: 900
+    }));
+    let currentRecPool = [];
+    let currentMood = 'All';
+    let curatorPicks = []; // parsed SUGGESTED for cards + optional BATCH_RATE items
+    let lastGrounding = {}; // title -> metadata for curator turns
+
+    // Combined exclusion for recs / search results (watched + disliked + to_watch treated as "seen or queued")
+    function getExcludedKeys() {
+      const keys = new Set();
+      [...watchlist, ...toWatchList, ...watchedList, ...dislikedList].forEach(it => {
+        const k = `${it.id}:${it._mediaType || 'movie'}`;
+        keys.add(k);
+      });
+      return keys;
+    }
 
     // === Password for Cloudflare Worker (Basic Auth) ===
     // The Worker requires a shared password on all /api/tmdb calls.
@@ -727,27 +948,32 @@
 
     function saveWatchlist() {
       localStorage.setItem('brous_watchlist', JSON.stringify(watchlist));
+      // keep top counts in sync if legacy path used
+      try { updateLibraryCounts(); } catch(e){}
     }
 
     function addToWatchlist(item) {
       const exists = watchlist.some(w => w.id === item.id && w._mediaType === item._mediaType);
       if (!exists) {
-        watchlist.push({
+        const rec = {
           id: item.id,
           title: item.title || item.name,
           _mediaType: item._mediaType || 'movie',
           poster_path: item.poster_path,
           release_date: item.release_date || item.first_air_date,
-          vote_average: item.vote_average
-        });
+          vote_average: item.vote_average,
+          genre_ids: item.genre_ids || []
+        };
+        watchlist.push(rec);
         const key = `${item.id}:${item._mediaType || 'movie'}`;
         watchedIds.add(key);
         saveWatchlist();
         renderWatchlist();
 
+        // Also feed the full To Watch list
+        addToToWatch(item);
+
         // Explicit removal from current discover/search results to prevent duplicates
-        // This is the dedicated removal function for items that should disappear from
-        // the current view (e.g. discover recommendations) once marked watched.
         removeFromCurrentResults(item.id, item._mediaType || 'movie');
       }
     }
@@ -758,24 +984,27 @@
     // is added to the watched library. It cleans both the in-memory cache and the DOM view.
     function removeFromCurrentResults(id, mediaType = 'movie') {
       const key = `${id}:${mediaType}`;
-      // Also clean the master accumulation list (important for "load more" / pagination
-      // and so that re-running Discover or filters doesn't bring watched items back)
       currentDiscoverResults = currentDiscoverResults.filter(m => {
         const mKey = `${m.id}:${m._mediaType || 'movie'}`;
         return mKey !== key;
       });
-
-      // Remove from the cached list used for re-renders
       lastRenderedItems = lastRenderedItems.filter(m => {
         const mKey = `${m.id}:${m._mediaType || 'movie'}`;
         return mKey !== key;
       });
+      currentRecPool = currentRecPool.filter(m => {
+        const mKey = `${m.id}:${m._mediaType || 'movie'}`;
+        return mKey !== key;
+      });
 
-      // Re-render the filtered list (reliable and simple). Prefer the cleaned master list.
       if (currentDiscoverResults.length > 0) {
         renderResults(currentDiscoverResults);
-      } else {
+      } else if (lastRenderedItems.length > 0) {
         renderResults(lastRenderedItems);
+      }
+      // keep recs grid fresh
+      if (document.getElementById('recs-grid')) {
+        recomputeRecommendations();
       }
     }
 
@@ -783,6 +1012,9 @@
       watchlist = watchlist.filter(w => !(w.id === id && w._mediaType === mediaType));
       const keyToDelete = `${id}:${mediaType || 'movie'}`;
       watchedIds.delete(keyToDelete);
+      // also clean full lists
+      toWatchList = toWatchList.filter(w => !(w.id === id && (w._mediaType||'movie') === (mediaType||'movie')));
+      saveToWatch();
       saveWatchlist();
       renderWatchlist();
     }
@@ -813,6 +1045,216 @@
           </div>`;
       });
       container.innerHTML = html;
+    }
+
+    // ===================== FULL LIBRARY (To Watch / Watched / Disliked) =====================
+    // Mirrors Streamlit lists + the title-based removal fix (items disappear reliably).
+    // Also syncs a bit with legacy watchlist for the old My List accordion.
+
+    function saveToWatch() {
+      localStorage.setItem('horror_roki_towatch', JSON.stringify(toWatchList));
+      updateLibraryCounts();
+      renderToWatch();
+      // also refresh legacy quick list if desired
+      try { renderWatchlist(); } catch(e){}
+    }
+    function saveWatched() {
+      localStorage.setItem('horror_roki_watched', JSON.stringify(watchedList));
+      updateLibraryCounts();
+      renderWatched();
+      // Recompute recs when library changes (taste changed)
+      if (currentRecPool.length) recomputeRecommendations();
+    }
+    function saveDisliked() {
+      localStorage.setItem('horror_roki_disliked', JSON.stringify(dislikedList));
+      updateLibraryCounts();
+      renderDisliked();
+      if (currentRecPool.length) recomputeRecommendations();
+    }
+
+    function updateLibraryCounts() {
+      const tw = document.getElementById('to-watch-count');
+      if (tw) tw.textContent = `(${toWatchList.length})`;
+      const w = document.getElementById('watched-count');
+      if (w) w.textContent = `(${watchedList.length})`;
+      const d = document.getElementById('disliked-count');
+      if (d) d.textContent = `(${dislikedList.length})`;
+      // top compact stats
+      const sw = document.getElementById('stat-watched');
+      if (sw) sw.innerHTML = `Watched: <span class="font-semibold text-zinc-200">${watchedList.length}</span>`;
+      const st = document.getElementById('stat-towatch');
+      if (st) st.innerHTML = `To Watch: <span class="font-semibold text-zinc-200">${toWatchList.length}</span>`;
+    }
+
+    function addToToWatch(item) {
+      const key = `${item.id}:${item._mediaType || 'movie'}`;
+      const exists = toWatchList.some(w => `${w.id}:${w._mediaType||'movie'}` === key);
+      if (exists) return;
+      const rec = {
+        id: item.id,
+        title: item.title || item.name,
+        _mediaType: item._mediaType || 'movie',
+        poster_path: item.poster_path,
+        release_date: item.release_date || item.first_air_date,
+        vote_average: item.vote_average,
+        genre_ids: item.genre_ids || [],
+        overview: item.overview || ''
+      };
+      toWatchList.unshift(rec); // newest first
+      // also add to legacy quick list for compatibility
+      const legacyExists = watchlist.some(w => w.id === rec.id && w._mediaType === rec._mediaType);
+      if (!legacyExists) {
+        watchlist.unshift({...rec});
+        localStorage.setItem('brous_watchlist', JSON.stringify(watchlist));
+        watchedIds.add(key);
+      }
+      saveToWatch();
+      // remove from current visible recs/search (like the Streamlit title filter + roki removal)
+      removeFromCurrentResults(item.id, item._mediaType || 'movie');
+    }
+
+    function addToWatched(item, rating = null) {
+      const key = `${item.id}:${item._mediaType || 'movie'}`;
+      // remove from to watch / quick list first (the "disappear" fix)
+      toWatchList = toWatchList.filter(w => `${w.id}:${w._mediaType||'movie'}` !== key);
+      watchlist = watchlist.filter(w => !(w.id === item.id && (w._mediaType||'movie') === (item._mediaType||'movie')));
+      localStorage.setItem('brous_watchlist', JSON.stringify(watchlist));
+      watchedIds.delete(key);
+
+      const existsIdx = watchedList.findIndex(w => `${w.id}:${w._mediaType||'movie'}` === key);
+      const rec = {
+        id: item.id, title: item.title || item.name, _mediaType: item._mediaType || 'movie',
+        poster_path: item.poster_path, release_date: item.release_date || item.first_air_date,
+        vote_average: item.vote_average, genre_ids: item.genre_ids || [],
+        overview: item.overview || '', rating: rating || null
+      };
+      if (existsIdx >= 0) watchedList[existsIdx] = rec; else watchedList.unshift(rec);
+      saveWatched();
+      saveToWatch(); // counts + renders
+      removeFromCurrentResults(item.id, item._mediaType || 'movie');
+    }
+
+    function addToDisliked(item) {
+      const key = `${item.id}:${item._mediaType || 'movie'}`;
+      toWatchList = toWatchList.filter(w => `${w.id}:${w._mediaType||'movie'}` !== key);
+      watchlist = watchlist.filter(w => !(w.id === item.id && (w._mediaType||'movie') === (item._mediaType||'movie')));
+      localStorage.setItem('brous_watchlist', JSON.stringify(watchlist));
+      watchedIds.delete(key);
+
+      const exists = dislikedList.some(d => `${d.id}:${d._mediaType||'movie'}` === key);
+      if (!exists) {
+        dislikedList.unshift({
+          id: item.id, title: item.title || item.name, _mediaType: item._mediaType || 'movie',
+          poster_path: item.poster_path, release_date: item.release_date || item.first_air_date,
+          vote_average: item.vote_average, genre_ids: item.genre_ids || []
+        });
+      }
+      saveDisliked();
+      saveToWatch();
+      removeFromCurrentResults(item.id, item._mediaType || 'movie');
+    }
+
+    function removeFromToWatch(id, mediaType = 'movie') {
+      const key = `${id}:${mediaType}`;
+      toWatchList = toWatchList.filter(w => `${w.id}:${w._mediaType||'movie'}` !== key);
+      watchlist = watchlist.filter(w => !(w.id === id && (w._mediaType||'movie') === mediaType));
+      localStorage.setItem('brous_watchlist', JSON.stringify(watchlist));
+      watchedIds.delete(key);
+      saveToWatch();
+    }
+
+    function removeFromWatched(id, mediaType = 'movie') {
+      const key = `${id}:${mediaType}`;
+      watchedList = watchedList.filter(w => `${w.id}:${w._mediaType||'movie'}` !== key);
+      saveWatched();
+    }
+
+    function removeFromDisliked(id, mediaType = 'movie') {
+      const key = `${id}:${mediaType}`;
+      dislikedList = dislikedList.filter(d => `${d.id}:${d._mediaType||'movie'}` !== key);
+      saveDisliked();
+    }
+
+    function renderToWatch() {
+      const c = document.getElementById('to-watch-content');
+      if (!c) return;
+      if (!toWatchList.length) {
+        c.innerHTML = `<div class="text-xs text-zinc-500 px-1">Empty. Add from cards, search results, or Curator SUGGESTED.</div>`;
+        return;
+      }
+      let html = '';
+      toWatchList.forEach((item, idx) => {
+        const year = (item.release_date || '').slice(0,4);
+        html += `<div class="library-item text-sm">
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">${item.title} <span class="text-[10px] text-zinc-500">${year}</span></div>
+          </div>
+          <button onclick="markWatchedFromToWatch(${idx})" class="text-[11px] px-2 py-0.5 rounded-xl bg-emerald-800 text-emerald-100">⭐ Rate &amp; Watched</button>
+          <button onclick="dislikeFromToWatch(${idx})" class="text-[11px] px-2 py-0.5 rounded-xl border border-zinc-700 text-zinc-400">👎</button>
+          <button onclick="removeFromToWatch(${item.id}, '${item._mediaType}')" class="text-[11px] text-red-400 px-1">×</button>
+        </div>`;
+      });
+      c.innerHTML = html;
+    }
+
+    function markWatchedFromToWatch(idx) {
+      const item = toWatchList[idx];
+      if (!item) return;
+      // Simple rating prompt (0-5); could be stars UI later
+      const r = prompt('Rate 1-5 (5 = loved)? Leave blank for no rating.', '4');
+      const rating = r ? Math.max(1, Math.min(5, parseInt(r,10) || 4)) : null;
+      addToWatched(item, rating);
+    }
+    function dislikeFromToWatch(idx) {
+      const item = toWatchList[idx];
+      if (!item) return;
+      addToDisliked(item);
+    }
+
+    function renderWatched() {
+      const c = document.getElementById('watched-content');
+      if (!c) return;
+      if (!watchedList.length) { c.innerHTML = `<div class="text-xs text-zinc-500 px-1">No watched yet.</div>`; return; }
+      let html = '';
+      watchedList.slice(0,12).forEach((item, idx) => {
+        const year = (item.release_date || '').slice(0,4);
+        const r = item.rating ? ` · ${item.rating}★` : '';
+        html += `<div class="library-item text-sm">
+          <div class="flex-1 truncate">${item.title} <span class="text-[10px] text-zinc-500">${year}${r}</span></div>
+          <button onclick="removeFromWatched(${item.id}, '${item._mediaType}')" class="text-[11px] text-red-400 px-1">×</button>
+        </div>`;
+      });
+      if (watchedList.length > 12) html += `<div class="text-[10px] text-zinc-500 px-1">+${watchedList.length-12} more</div>`;
+      c.innerHTML = html;
+    }
+
+    function renderDisliked() {
+      const c = document.getElementById('disliked-content');
+      if (!c) return;
+      if (!dislikedList.length) { c.innerHTML = `<div class="text-xs text-zinc-500 px-1">Nothing disliked.</div>`; return; }
+      let html = '';
+      dislikedList.slice(0,8).forEach(item => {
+        html += `<div class="library-item text-sm">
+          <div class="flex-1 truncate">${item.title}</div>
+          <button onclick="removeFromDisliked(${item.id}, '${item._mediaType}')" class="text-[11px] text-red-400 px-1">×</button>
+        </div>`;
+      });
+      c.innerHTML = html;
+    }
+
+    function pickRandomToWatch() {
+      if (!toWatchList.length) { alert('To Watch is empty.'); return; }
+      const pick = toWatchList[Math.floor(Math.random()*toWatchList.length)];
+      // show in modal or just toast + detail if possible
+      openModal(pick).catch(()=>{});
+    }
+
+    function updateAllLibraryRenders() {
+      updateLibraryCounts();
+      renderToWatch();
+      renderWatched();
+      renderDisliked();
+      try { renderWatchlist(); } catch(e){}
     }
 
     // ===================== MODAL =====================
@@ -875,15 +1317,28 @@
         availEl.innerHTML = 'No availability data';
       }
 
-      // Add to list button
-      const inList = watchlist.some(w => w.id === item.id && w._mediaType === item._mediaType);
-      addBtn.textContent = inList ? 'In My List' : 'Add to My List';
-      addBtn.disabled = inList;
-      addBtn.onclick = () => {
-        addToWatchlist(item);
-        addBtn.textContent = 'Added!';
-        setTimeout(() => closeModal(), 800);
+      // Rich actions (full lists support)
+      addBtn.style.display = 'none'; // hide single, use our row
+      let actions = document.getElementById('modal-actions-row');
+      if (!actions) {
+        actions = document.createElement('div');
+        actions.id = 'modal-actions-row';
+        actions.className = 'flex gap-2 mt-4';
+        const footer = addBtn.parentNode;
+        footer.appendChild(actions);
+      }
+      actions.innerHTML = `
+        <button class="flex-1 px-4 py-2 rounded-3xl bg-emerald-700 text-white text-sm" id="ma-towatch">+ To Watch</button>
+        <button class="flex-1 px-4 py-2 rounded-3xl bg-zinc-800 border border-zinc-700 text-sm" id="ma-watched">⭐ Mark Watched</button>
+        <button class="px-4 py-2 rounded-3xl border border-zinc-700 text-red-400 text-sm" id="ma-dislike">👎 Dislike</button>
+      `;
+      document.getElementById('ma-towatch').onclick = () => { addToToWatch(item); closeModal(); };
+      document.getElementById('ma-watched').onclick = () => {
+        const r = prompt('Rate 1-5?', '4');
+        addToWatched(item, r ? parseInt(r,10) : null);
+        closeModal();
       };
+      document.getElementById('ma-dislike').onclick = () => { addToDisliked(item); closeModal(); };
     }
 
     function closeModal() {
@@ -1046,11 +1501,11 @@
 
       lastRenderedItems = items;
 
-      // Filter out watched items from discover/search results to prevent duplicates
-      // (watched items are in My List / watched library)
+      // Filter out watched / to-watch / disliked using full exclusion (carries the "disappear" fix)
+      const excluded = getExcludedKeys();
       items = items.filter(m => {
         const key = `${m.id}:${m._mediaType || 'movie'}`;
-        return !watchedIds.has(key);
+        return !excluded.has(key);
       });
 
       items.forEach(m => {
@@ -1129,28 +1584,503 @@
           </div>`;
         enhanceCard(card, m);
 
-        // Add to List button (separate so we can control events cleanly)
+        // Rich list actions (To Watch primary + Watched/Dislike)
         const addBtnContainer = document.createElement('div');
-        addBtnContainer.className = 'mt-3 flex justify-end';
-        const addBtn = document.createElement('button');
-        addBtn.className = 'text-xs px-3 py-1 rounded-2xl border border-zinc-600 hover:bg-zinc-800 text-zinc-300';
-        addBtn.textContent = '+ Add to List';
-        addBtn.onclick = (e) => {
-          e.stopImmediatePropagation();
-          addToWatchlist(m);
-          addBtn.textContent = 'Added!';
-          setTimeout(() => {
-            addBtn.textContent = '+ Add to List';
-          }, 1200);
-        };
-        addBtnContainer.appendChild(addBtn);
+        addBtnContainer.className = 'mt-3 flex gap-2';
+        const b1 = document.createElement('button');
+        b1.className = 'flex-1 text-xs px-3 py-1 rounded-2xl bg-emerald-700 text-white';
+        b1.textContent = '+ To Watch';
+        b1.onclick = (e) => { e.stopImmediatePropagation(); addToToWatch(m); b1.textContent = '✓'; setTimeout(()=>b1.textContent='+ To Watch',900); };
+        const b2 = document.createElement('button');
+        b2.className = 'flex-1 text-xs px-3 py-1 rounded-2xl bg-zinc-800 border border-zinc-700';
+        b2.textContent = '⭐ Watched';
+        b2.onclick = (e) => { e.stopImmediatePropagation(); const r=prompt('Rate?','4'); addToWatched(m, r?parseInt(r):null); b2.textContent='✓'; };
+        const b3 = document.createElement('button');
+        b3.className = 'text-xs px-2 py-1 rounded-2xl border border-zinc-700 text-red-400';
+        b3.textContent = '👎';
+        b3.onclick = (e) => { e.stopImmediatePropagation(); addToDisliked(m); b3.textContent='✓'; };
+        addBtnContainer.appendChild(b1); addBtnContainer.appendChild(b2); addBtnContainer.appendChild(b3);
         card.appendChild(addBtnContainer);
 
         container.appendChild(card);
       });
     }
 
-    // Boot
+    // ===================== HORROR ROKI RECS + TASTE (port of boost_by_user_taste + get_user_genre_preferences) =====================
+
+    function getUserGenrePrefs() {
+      // Simple: count genre_ids from watchedList (weight by rating if 5)
+      const counts = {};
+      watchedList.forEach(m => {
+        const w = (m.rating === 5) ? 3 : 1;
+        (m.genre_ids || []).forEach(gid => {
+          counts[gid] = (counts[gid] || 0) + w;
+        });
+      });
+      const total = Object.values(counts).reduce((a,b)=>a+b, 0) || 1;
+      const prefs = {};
+      Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([gid, c]) => {
+        const g = GENRES.find(x => x.id == gid);
+        if (g) prefs[g.name] = Math.round((c/total)*1000)/10;
+      });
+      return prefs;
+    }
+
+    function boostScore(item, prefs) {
+      let base = item.vote_average || 6.5;
+      const gids = item.genre_ids || [];
+      const top = Object.keys(prefs);
+      // crude: if overlaps known top genres ids (map name->id rough)
+      const topIds = GENRES.filter(g => top.includes(g.name)).map(g=>g.id);
+      if (gids.some(id => topIds.includes(id))) base += 1.8;
+      // mood tweak (very light)
+      if (currentMood !== 'All') base += (Math.random()*0.6 - 0.1);
+      return base;
+    }
+
+    function renderMoodChips() {
+      const c = document.getElementById('mood-chips');
+      if (!c) return;
+      const moods = ['All', 'Slow burn', 'Psychological', 'Supernatural', 'Folk', 'Gory'];
+      c.innerHTML = '';
+      moods.forEach(m => {
+        const b = document.createElement('button');
+        b.textContent = m;
+        b.className = `mood-chip ${m === currentMood ? 'active' : ''}`;
+        b.onclick = () => {
+          currentMood = m;
+          renderMoodChips();
+          recomputeRecommendations();
+        };
+        c.appendChild(b);
+      });
+    }
+
+    async function refreshRecPool() {
+      const grid = document.getElementById('recs-grid');
+      const empty = document.getElementById('recs-empty');
+      if (grid) grid.innerHTML = `<div class="text-center py-6 text-zinc-400 text-sm col-span-full">Loading fresh horror pool from the void...</div>`;
+      if (empty) empty.classList.add('hidden');
+
+      try {
+        // Discover horror (genre 27), popular, US region, exclude watched via post filter
+        const url = `/api/tmdb/3/discover/movie?language=en-US&sort_by=popularity.desc&include_adult=false&watch_region=US&with_genres=27&page=1&vote_count.gte=50`;
+        const data = await apiFetch(url);
+        let results = (data.results || []).slice(0, 18);
+
+        // Enrich a bit (providers optional for recs; we can skip heavy calls for speed)
+        const excluded = getExcludedKeys();
+        results = results.filter(r => !excluded.has(`${r.id}:movie`));
+
+        // store minimal + genre_ids
+        currentRecPool = results.map(r => ({
+          id: r.id, title: r.title, _mediaType: 'movie',
+          poster_path: r.poster_path, release_date: r.release_date,
+          vote_average: r.vote_average, genre_ids: r.genre_ids || [],
+          overview: r.overview || ''
+        }));
+
+        recomputeRecommendations();
+      } catch (e) {
+        if (grid) grid.innerHTML = `<div class="text-center py-6 text-red-400 text-sm col-span-full">Failed to load pool. Check 🔐 password / connection.</div>`;
+      }
+    }
+
+    function recomputeRecommendations() {
+      const grid = document.getElementById('recs-grid');
+      const empty = document.getElementById('recs-empty');
+      if (!grid) return;
+
+      if (!currentRecPool.length) {
+        grid.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+
+      const prefs = getUserGenrePrefs();
+      // score + sort
+      let scored = currentRecPool.map(it => ({...it, _score: boostScore(it, prefs)}));
+      // light mood filter demo (for real would use more metadata or keywords)
+      if (currentMood !== 'All') {
+        // keep all but sort "moodier" first by slight random + vote for demo
+        scored.sort((a,b) => (b._score + (currentMood.length % 3)) - (a._score));
+      } else {
+        scored.sort((a,b) => b._score - a._score);
+      }
+
+      grid.innerHTML = '';
+      scored.slice(0, 9).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'movie-card bg-zinc-900 border border-zinc-700 rounded-3xl p-3 flex flex-col';
+        const poster = item.poster_path ? `https://image.tmdb.org/t/p/w342${item.poster_path}` : 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27120%27 height=%27180%27%3E%3Crect fill=%27%2327272a%27 width=%27120%27 height=%27180%27/%3E%3C/svg%27';
+        const year = (item.release_date || '').slice(0,4);
+        card.innerHTML = `
+          <div class="flex gap-3">
+            <img src="${poster}" class="w-[52px] h-[78px] rounded-xl object-cover border border-zinc-800" alt="">
+            <div class="min-w-0 flex-1">
+              <div class="font-semibold text-sm leading-tight">${item.title}</div>
+              <div class="text-[11px] text-zinc-500">${year} · ★${(item.vote_average||0).toFixed(1)}</div>
+              <div class="text-[10px] text-emerald-400/80 mt-0.5">taste boosted</div>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button class="flex-1 text-xs py-1.5 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white" data-act="towatch">+ To Watch</button>
+            <button class="flex-1 text-xs py-1.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700" data-act="watched">Mark Watched</button>
+            <button class="text-xs px-2 py-1.5 rounded-2xl border border-zinc-700 text-red-400" data-act="dislike">👎</button>
+          </div>
+        `;
+        // wire actions
+        card.querySelector('[data-act="towatch"]').onclick = () => { addToToWatch(item); card.remove(); };
+        card.querySelector('[data-act="watched"]').onclick = () => {
+          const r = prompt('Your rating 1-5?', '4');
+          addToWatched(item, r ? parseInt(r,10) : null);
+          card.remove();
+        };
+        card.querySelector('[data-act="dislike"]').onclick = () => { addToDisliked(item); card.remove(); };
+        grid.appendChild(card);
+      });
+    }
+
+    // ===================== THE CURATOR (full port: history, context, grounding, streaming /api/llm, SUGGESTED + BATCH_RATE) =====================
+
+    function saveChat() {
+      localStorage.setItem('horror_roki_chat', JSON.stringify(chatHistory.slice(-20)));
+    }
+
+    function renderCuratorMessages() {
+      const box = document.getElementById('curator-messages');
+      if (!box) return;
+      box.innerHTML = '';
+      const recent = chatHistory.slice(-8);
+      recent.forEach(turn => {
+        const div = document.createElement('div');
+        div.className = `curator-msg ${turn.role === 'user' ? 'user' : ''}`;
+        div.innerHTML = `<div class="whitespace-pre-wrap">${escapeHtml(turn.content || '')}</div>`;
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async function sendToCurator() {
+      const input = document.getElementById('curator-input');
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      // push user turn
+      chatHistory.push({role: 'user', content: text});
+      saveChat();
+      renderCuratorMessages();
+      input.value = '';
+
+      const status = document.getElementById('curator-status');
+      if (status) status.textContent = 'The Curator is consulting the reels...';
+
+      // Build context + grounding (simplified port of build_user_context + extract + live)
+      const prefs = getUserGenrePrefs();
+      const twTitles = toWatchList.slice(0,12).map(x=>x.title);
+      const disTitles = dislikedList.slice(0,8).map(x=>x.title);
+      const recentW = watchedList.slice(0,5).map(x=>x.title);
+      const userCtx = `USER TASTE: ${JSON.stringify(prefs)}\nRECENT WATCHED: ${recentW}\nTO_WATCH: ${twTitles}\nDISLIKED: ${disTitles}\nCOUNTS: watched=${watchedList.length}, to_watch=${toWatchList.length}`;
+
+      // crude extract: titles mentioned in query that we know from lists or pool
+      const knownTitles = [...toWatchList, ...watchedList, ...dislikedList, ...currentRecPool].map(x=>x.title).filter(Boolean);
+      const mentioned = knownTitles.filter(t => text.toLowerCase().includes(t.toLowerCase().slice(0, Math.min(12,t.length))));
+      const grounding = {};
+      mentioned.slice(0,4).forEach(t => {
+        const m = [...toWatchList, ...watchedList].find(x => x.title === t);
+        if (m) grounding[t] = { year: (m.release_date||'').slice(0,4), overview: (m.overview||'').slice(0,180), id: m.id };
+      });
+      lastGrounding = grounding;
+
+      // messages for LLM (SYSTEM + context + user)
+      const sys = `You are The Curator, eternal keeper of horror cinema. Dry dark wit. Strict: never spoil, respect watched/disliked lists (never suggest them as unseen), ground facts only in provided metadata. For recs end with exactly: SUGGESTED: ["Exact Title"] . For batch: BATCH_RATE: [{"title":"..","suggested_rating":4,"reason":".."}]. Keep short.`;
+      const fullUser = `USER CONTEXT:\n${userCtx}\n\nGROUNDING METADATA:\n${JSON.stringify(grounding)}\n\nUSER: ${text}`;
+
+      const payload = {
+        model: llmConfig.model || 'grok-4.3',
+        messages: [
+          {role: 'system', content: sys},
+          {role: 'user', content: fullUser}
+        ],
+        max_tokens: llmConfig.max_response_tokens || 900,
+        temperature: 0.85,
+        stream: true
+      };
+
+      try {
+        const res = await fetch('/api/llm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('LLM proxy error ' + res.status + ' (check XAI_TOKEN in Worker + password)');
+
+        // Stream parse (OpenAI SSE style)
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let full = '';
+        const assistantDiv = document.createElement('div');
+        assistantDiv.className = 'curator-msg';
+        assistantDiv.innerHTML = `<span class="curator-avatar">👻</span> <span class="curator-text"></span>`;
+        const textSpan = assistantDiv.querySelector('.curator-text');
+        const box = document.getElementById('curator-messages');
+        if (box) { box.appendChild(assistantDiv); box.scrollTop = box.scrollHeight; }
+
+        while (true) {
+          const {done, value} = await reader.read();
+          if (done) break;
+          const chunk = dec.decode(value, {stream:true});
+          // parse data: lines
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const d = line.slice(6).trim();
+              if (d === '[DONE]') continue;
+              try {
+                const j = JSON.parse(d);
+                const delta = j.choices?.[0]?.delta?.content || '';
+                if (delta) {
+                  full += delta;
+                  textSpan.textContent = full;
+                  if (box) box.scrollTop = box.scrollHeight;
+                }
+              } catch(_) {}
+            }
+          }
+        }
+
+        // done: save assistant turn
+        chatHistory.push({role: 'assistant', content: full});
+        saveChat();
+
+        // parse markers and render special UI (SUGGESTED cards + BATCH)
+        parseAndRenderCuratorExtras(full, assistantDiv);
+
+        if (status) status.textContent = 'Grounded • streaming via Worker • history kept until explicit clear';
+
+      } catch (err) {
+        const box = document.getElementById('curator-messages');
+        if (box) {
+          const errDiv = document.createElement('div');
+          errDiv.className = 'curator-msg';
+          errDiv.innerHTML = `<span class="text-red-400">The projector bulb flickers... ${escapeHtml(err.message)}</span>`;
+          box.appendChild(errDiv);
+        }
+        if (status) status.textContent = 'Error talking to Curator. Check password + Worker XAI_TOKEN.';
+      }
+    }
+
+    function parseAndRenderCuratorExtras(fullText, parentDiv) {
+      curatorPicks = [];
+      // SUGGESTED: ["Title One", "Title Two"]
+      const sugMatch = fullText.match(/SUGGESTED:\s*\[([^\]]+)\]/i);
+      if (sugMatch) {
+        try {
+          // crude parse titles
+          const titlesStr = sugMatch[1];
+          const titles = titlesStr.split(',').map(s => s.trim().replace(/^"|"$/g,'').replace(/^'|'$/g,''));
+          titles.forEach(t => {
+            if (t.length > 1) curatorPicks.push({title: t, type: 'suggested'});
+          });
+        } catch(e){}
+      }
+      // BATCH_RATE: [ {title, suggested_rating, reason} ... ]
+      const batchMatch = fullText.match(/BATCH_RATE:\s*(\[[\s\S]*?\])/i);
+      if (batchMatch) {
+        try {
+          const arr = JSON.parse(batchMatch[1]);
+          if (Array.isArray(arr)) {
+            arr.slice(0,6).forEach(b => {
+              if (b.title) curatorPicks.push({title: b.title, type: 'batch', rating: b.suggested_rating, reason: b.reason || ''});
+            });
+          }
+        } catch(e){}
+      }
+
+      if (!curatorPicks.length) return;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'suggested-card mt-2 space-y-2';
+      wrap.innerHTML = `<div class="text-[10px] uppercase tracking-widest text-zinc-500 px-1">Curator picks — act on them</div>`;
+
+      curatorPicks.forEach((p, i) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 text-sm bg-zinc-950 border border-zinc-800 rounded-2xl px-2 py-1';
+        if (p.type === 'batch') {
+          row.innerHTML = `
+            <input type="checkbox" class="accent-red-600" checked data-idx="${i}">
+            <span class="flex-1 truncate">${p.title}</span>
+            <span class="text-[11px] text-amber-400">${p.rating || 4}★</span>
+            <button class="text-[11px] px-2 py-0.5 rounded-xl bg-emerald-700 text-white" data-apply-batch>Apply</button>
+          `;
+        } else {
+          row.innerHTML = `
+            <span class="flex-1 truncate">${p.title}</span>
+            <button class="text-[11px] px-2 py-0.5 rounded-xl bg-emerald-700 text-white" data-add-towatch>+ To Watch</button>
+            <button class="text-[11px] px-2 py-0.5 rounded-xl border border-zinc-700" data-mark-watched>Mark Watched</button>
+          `;
+        }
+        wrap.appendChild(row);
+
+        // wire (note: after append)
+        setTimeout(() => {
+          const addTw = row.querySelector('[data-add-towatch]');
+          if (addTw) addTw.onclick = () => {
+            // try to find full item from pool or search live
+            const found = currentRecPool.find(x => x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: Date.now()+i };
+            addToToWatch(found);
+            row.style.opacity = '0.4';
+          };
+          const markW = row.querySelector('[data-mark-watched]');
+          if (markW) markW.onclick = () => {
+            const found = currentRecPool.find(x => x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: Date.now()+i };
+            const r = prompt('Rate?', '4'); addToWatched(found, r?parseInt(r):null); row.style.opacity='0.4';
+          };
+          const chk = row.querySelector('input[type="checkbox"]');
+          const apply = row.querySelector('[data-apply-batch]');
+          if (apply && chk) {
+            apply.onclick = () => {
+              if (!chk.checked) return;
+              const found = currentRecPool.find(x => x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: Date.now()+i };
+              addToWatched(found, p.rating || 4);
+              row.style.opacity = '0.3';
+            };
+          }
+        }, 10);
+      });
+
+      parentDiv.appendChild(wrap);
+    }
+
+    function clearCuratorChat() {
+      if (!confirm('Clear entire chat history?')) return;
+      chatHistory = [];
+      localStorage.removeItem('horror_roki_chat');
+      const box = document.getElementById('curator-messages');
+      if (box) box.innerHTML = '';
+    }
+    function clearCuratorPicks() {
+      curatorPicks = [];
+      // remove any extra suggested cards from DOM
+      document.querySelectorAll('.suggested-card').forEach(el => el.remove());
+    }
+
+    // Settings (LLM config + backup + import) - simple modal using existing style
+    function showSettings() {
+      const modal = document.getElementById('detail-modal');
+      if (!modal) { alert('Settings: use localStorage keys horror_roki_* or edit llmConfig in console for now. Full panel coming.'); return; }
+      // Reuse modal for settings (quick)
+      modal.classList.remove('hidden');
+      const titleEl = document.getElementById('modal-title');
+      const bodyWrap = document.getElementById('modal-overview');
+      const meta = document.getElementById('modal-meta');
+      const genresEl = document.getElementById('modal-genres');
+      const avail = document.getElementById('modal-availability');
+      const btn = document.getElementById('modal-add-button');
+      if (titleEl) titleEl.textContent = 'Settings & Backup';
+      if (meta) meta.textContent = 'All data stays in this browser. Curator via /api/llm Worker.';
+      if (genresEl) genresEl.innerHTML = '';
+      if (avail) avail.innerHTML = `
+        <div class="text-sm space-y-3">
+          <div>
+            <div class="text-xs text-zinc-500 mb-1">LLM Model (via Worker XAI_TOKEN)</div>
+            <input id="set-model" value="${llmConfig.model || 'grok-4.3'}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm w-full">
+          </div>
+          <div class="flex gap-2">
+            <button id="save-llm" class="flex-1 px-3 py-1.5 rounded-2xl bg-indigo-600 text-white text-sm">Save LLM Config</button>
+            <button id="do-backup" class="flex-1 px-3 py-1.5 rounded-2xl bg-zinc-800 border border-zinc-700 text-sm">Download Full Backup JSON</button>
+          </div>
+          <div>
+            <div class="text-xs text-zinc-500 mb-1">Import Letterboxd / full backup JSON</div>
+            <input type="file" id="import-file" accept=".json,.csv" class="text-xs">
+            <button id="do-import" class="ml-2 px-3 py-1 rounded-2xl bg-zinc-700 text-sm">Import</button>
+          </div>
+          <div class="text-[10px] text-zinc-500">Clear all: localStorage.clear() + reload (dev only).</div>
+        </div>
+      `;
+      if (btn) { btn.textContent = 'Close'; btn.onclick = () => { modal.classList.add('hidden'); }; }
+
+      // wire after
+      setTimeout(() => {
+        const sm = document.getElementById('save-llm');
+        if (sm) sm.onclick = () => {
+          const m = document.getElementById('set-model');
+          if (m) { llmConfig.model = m.value.trim() || 'grok-4.3'; }
+          localStorage.setItem('horror_roki_llm', JSON.stringify(llmConfig));
+          alert('LLM config saved locally.');
+        };
+        const db = document.getElementById('do-backup');
+        if (db) db.onclick = downloadFullBackup;
+        const impBtn = document.getElementById('do-import');
+        const f = document.getElementById('import-file');
+        if (impBtn && f) impBtn.onclick = () => {
+          if (!f.files.length) return;
+          const reader = new FileReader();
+          reader.onload = ev => {
+            const txt = ev.target.result || '';
+            if (f.files[0].name.toLowerCase().endsWith('.csv') || txt.trim().startsWith('Title,')) {
+              // Basic Letterboxd-ish CSV support: take Title column or first col, add as watched (no id/genre until recs touch live)
+              const lines = txt.trim().split(/\r?\n/);
+              const headers = lines[0].toLowerCase().split(',');
+              const tIdx = headers.findIndex(h => h.includes('title') || h.includes('name'));
+              let added = 0;
+              for (let i=1; i<lines.length && i<200; i++) {
+                const cols = lines[i].split(',');
+                const title = (tIdx>=0 ? cols[tIdx] : cols[0] || '').replace(/^"|"$/g,'').trim();
+                if (title.length > 1) {
+                  watchedList.unshift({id: 100000 + added + i, title, _mediaType:'movie', release_date:'', vote_average:0, genre_ids:[]});
+                  added++;
+                }
+              }
+              localStorage.setItem('horror_roki_watched', JSON.stringify(watchedList));
+              updateAllLibraryRenders();
+              alert('CSV imported (basic titles as Watched; re-Refresh Pool or use details to enrich).');
+              modal.classList.add('hidden');
+              return;
+            }
+            try {
+              const data = JSON.parse(txt);
+              if (data.watched) { watchedList = data.watched; localStorage.setItem('horror_roki_watched', JSON.stringify(watchedList)); }
+              if (data.to_watch) { toWatchList = data.to_watch; localStorage.setItem('horror_roki_towatch', JSON.stringify(toWatchList)); }
+              if (data.disliked) { dislikedList = data.disliked; localStorage.setItem('horror_roki_disliked', JSON.stringify(dislikedList)); }
+              if (data.chat_history) { chatHistory = data.chat_history; localStorage.setItem('horror_roki_chat', JSON.stringify(chatHistory)); }
+              if (data.llm_config) { llmConfig = data.llm_config; localStorage.setItem('horror_roki_llm', JSON.stringify(llmConfig)); }
+              updateAllLibraryRenders();
+              renderCuratorMessages();
+              alert('Import loaded (partial tolerant).');
+              modal.classList.add('hidden');
+            } catch(e){ alert('Import failed: ' + e.message); }
+          };
+          reader.readAsText(f.files[0]);
+        };
+      }, 30);
+    }
+
+    function downloadFullBackup() {
+      const backup = {
+        watched: watchedList,
+        to_watch: toWatchList,
+        disliked: dislikedList,
+        chat_history: chatHistory.slice(-30),
+        llm_config: llmConfig,
+        chat_version: '1.0',
+        exported_at: new Date().toISOString(),
+        version: '3.0'
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `horror_roki_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+    }
+
+    // Boot (extended for new library + recs + curator)
     function boot() {
       loadPreferences();
 
@@ -1163,7 +2093,7 @@
       // Initialize Search type
       setSearchType('movie');
 
-      // Watchlist
+      // Watchlist (legacy)
       renderWatchlist();
 
       const myListDetails = document.getElementById('my-list-details');
@@ -1173,9 +2103,34 @@
         });
       }
 
+      // Re-render new library sections when their accordions open
+      ['library-to-watch','library-watched','library-disliked'].forEach(id => {
+        const d = document.getElementById(id);
+        if (d) d.addEventListener('toggle', () => {
+          if (d.open) updateAllLibraryRenders();
+        });
+      });
+
+      // New Horror Roki inits
+      // One-time seed: if new lists empty but legacy watchlist has data, treat legacy as To Watch
+      if ((!toWatchList || toWatchList.length === 0) && watchlist && watchlist.length > 0) {
+        toWatchList = watchlist.map(x => ({...x}));
+        localStorage.setItem('horror_roki_towatch', JSON.stringify(toWatchList));
+      }
+      // Re-sync legacy exclusion set from all lists (watched disappear fix)
+      watchedIds = new Set([...toWatchList, ...watchedList, ...dislikedList, ...watchlist].map(w => `${w.id}:${w._mediaType || 'movie'}`));
+      updateAllLibraryRenders();
+      renderMoodChips();
+      renderCuratorMessages();
+      // Optional: auto-seed a small rec pool for "Recommended for you" on first boot (user can Refresh)
+      if (!currentRecPool.length && watchedList.length > 0) {
+        // fire and forget; non blocking
+        setTimeout(() => { refreshRecPool().catch(()=>{}); }, 1200);
+      }
+
       // Helpful console note for first-time setup (password is required for the Worker)
       if (!localStorage.getItem('brous_password')) {
-        console.log('%c[Brous] No API password set yet. Click the 🔐 Pass button (top right) or load Discover/Search to enter the shared password.', 'color:#f59e0b');
+        console.log('%c[Horror Roki] No API password set yet. Click the 🔐 Pass button or Settings. Needed for search, discover, recs, and The Curator.', 'color:#f59e0b');
       }
     }
 
@@ -1246,7 +2201,7 @@
   </script>
 
   <div class="max-w-7xl mx-auto px-5 pb-8 text-center text-[11px] text-zinc-500">
-    Movies &amp; TV data powered by <a href="https://www.themoviedb.org" target="_blank" class="underline hover:text-zinc-300">TMDB</a>. Not affiliated with any streaming service.
+    Movies &amp; TV data powered by <a href="https://www.themoviedb.org" target="_blank" class="underline hover:text-zinc-300">TMDB</a>. Curator uses xAI (via your Worker). Not affiliated with any service. All your data stays in this browser.
   </div>
 </body>
 </html>

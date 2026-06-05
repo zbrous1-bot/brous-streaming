@@ -1,7 +1,7 @@
 {
-  "name": "Brous Streaming",
-  "short_name": "Brous",
-  "description": "Find where to watch movies and TV across your services",
+  "name": "Horror Roki",
+  "short_name": "Horror Roki",
+  "description": "Personal horror recommendations. Find your next nightmare.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#18181b",

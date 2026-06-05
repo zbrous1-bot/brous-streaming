@@ -1,19 +1,27 @@
-# Brous
+# Horror Roki
 
-**Brous** is a clean, mobile-first web app for discovering where to watch movies and TV shows across your subscribed services.
+**Horror Roki** is a beautiful, installable, no-server personal horror movie companion.
 
-**Live Demo:** [https://brous-streaming.pages.dev/](https://brous-streaming.pages.dev/)
+- Personalized "Recommended for you" (taste boost from your Watched library, mood chips: Slow burn / Folk / etc.)
+- Explicit To Watch + Watched + Disliked lists (items disappear from recs/search — the reliable title/id filter)
+- Full "The Curator" chatbot (streaming, strictly grounded, no spoilers, list-respecting, SUGGESTED cards + BATCH_RATE with partial apply)
+- Search + Discover (with "My services" filter for where to watch)
+- Stats via your lists, full JSON backup/restore (incl. chat history + llm config), Letterboxd-friendly import
+- All data in browser only. TMDB + xAI calls proxied via your Cloudflare Worker (keys never in browser).
+
+**Live:** https://horror-roki.pages.dev/
+
+Converted from the rich Streamlit Brous Movie Dashboard + Curator to this immersive static experience matching the superior look & feel.
 
 ## Features
 
-- **Search** for movies and TV shows
-- **Discover** titles by genre, minimum rating, and decade
-- Filter results to only services you subscribe to ("My Services")
-- Clear breakdown of Streaming, Rent, and Buy options
-- "Yours" highlighting for services you actually pay for
-- Direct links to IMDb and Rotten Tomatoes
-- TMDB ratings shown on every result
-- Fully installable as a Progressive Web App (PWA)
+- **Recommended for you** — client-side taste boost from Watched (with rating love weighting) + mood filters
+- **To Watch / Watched / Disliked** full library management with reliable removal from recs (title+id filter)
+- **The Curator** 👻 — full featured horror chatbot (grok-4.3 via Worker, per-turn grounding + live TMDB, SUGGESTED actionable cards, BATCH_RATE UI, explicit 🧹/🪦 clears, history persisted)
+- **Search + Discover** horror titles, "My services only", providers/availability
+- **Backup & Import** — one JSON holds everything (lists + chat + llm prefs); tolerant of old versions
+- PWA installable, mobile-first, beautiful dark horror aesthetic (Tailwind + custom cards)
+- Worker proxies both TMDB and LLM (xAI_TOKEN + PASSWORD secrets) — keys never exposed
 
 ## Getting Started
 
@@ -41,21 +49,24 @@ Brous is a completely static site (no backend). You can host it anywhere that su
    - **Build output directory**: `.` (or `deploy` depending on your Pages config — the files in `deploy/` become the site root)
 3. Save and deploy. Future `git push` to `main` will auto-deploy.
 
-**Important: The Cloudflare Worker (required for API calls)**
+**Important: The Cloudflare Worker (required for TMDB + The Curator)**
 
-The app calls `/api/tmdb/...` which must be handled by a Worker that:
-- Adds the real TMDB key (never exposed to browser)
-- Enforces a simple shared password via Basic Auth
+The app calls `/api/tmdb/...` and `POST /api/llm` (for Curator). Worker must:
+- Inject real TMDB key + XAI_TOKEN (for grok-4.3 Curator)
+- Enforce Basic Auth password (shared secret)
 
-- The Worker source is in `deploy/cloudflare-worker/worker.js`
-- Deploy it as a separate Worker in Cloudflare (use Wrangler or the dashboard "Upload" with the .js file).
-- In the **Worker** settings (not Pages):
-  - Add **Secrets**:
-    - `TMDB_TOKEN` = your TMDB API key (v3) **or** v4 Read Access Token (starts with `eyJ...`)
-    - `PASSWORD` = a simple shared password (e.g. `mysecret123`) — tell the <4 people who use the app
-  - Add a **Route** (Triggers → Routes) so the Worker runs on your Pages domain:
-    - Pattern: `your-project.pages.dev/api/tmdb*`
-    - (Also add for any custom domain you use)
+- Worker source: `deploy/cloudflare-worker/worker.js` (now includes full LLM streaming proxy)
+- Deploy as Cloudflare Worker (Wrangler or dashboard).
+- **Secrets** (Worker settings):
+  - `TMDB_TOKEN` (v3 key or `eyJ...` v4)
+  - `XAI_TOKEN` (your x.ai key for The Curator; optional if you don't use chat)
+  - `PASSWORD` (shared; e.g. `mysecret123`)
+- **Routes** (Worker → Triggers → Routes):
+  - `your-project.pages.dev/api/tmdb*`
+  - `your-project.pages.dev/api/llm*`
+  (add for custom domains too)
+
+On first visit: click 🔐 Pass (or Settings) and enter the PASSWORD. Then use Search/Discover/Refresh Pool/Curator.
 
 Once deployed:
 - Visit your Pages URL.
