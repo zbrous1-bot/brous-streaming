@@ -2136,20 +2136,7 @@
       // Watchlist (legacy)
       renderWatchlist();
 
-      const myListDetails = document.getElementById('my-list-details');
-      if (myListDetails) {
-        myListDetails.addEventListener('toggle', () => {
-          if (myListDetails.open) renderWatchlist();
-        });
-      }
-
-      // Re-render new library sections when their accordions open
-      ['library-to-watch','library-watched','library-disliked'].forEach(id => {
-        const d = document.getElementById(id);
-        if (d) d.addEventListener('toggle', () => {
-          if (d.open) updateAllLibraryRenders();
-        });
-      });
+      // No legacy accordion listeners needed anymore (personal content is now in top tabs)
 
       // New Horror Roki inits
       // One-time seed: if new lists empty but legacy watchlist has data, treat legacy as To Watch
