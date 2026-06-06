@@ -181,19 +181,25 @@
     .btn-nightmare:active { background-color: #7f1d1d; }
 
     .mood-chip {
-      font-size: 12px;
-      padding: 4px 10px;
+      font-size: 13px;
+      padding: 5px 12px;
       border-radius: 9999px;
       border: 1px solid #3f3f46;
       background: #18181b;
       color: #d1d5db;
       transition: all .1s ease;
+      font-weight: 500;
+    }
+    .mood-chip:hover {
+      border-color: #52525b;
+      background: #27272a;
     }
     .mood-chip.active, .mood-chip:active {
       background: #7f1d1d;
       border-color: #b91c1c;
       color: white;
       transform: scale(1.02);
+      font-weight: 600;
     }
 
     .library-item {
@@ -239,19 +245,137 @@
     }
 
     .personal-tab {
-      padding: 6px 12px;
-      font-size: 13px;
-      border-bottom: 2px solid transparent;
+      padding: 8px 14px;
+      font-size: 15px;
+      border-bottom: 3px solid transparent;
       color: #a1a1aa;
       white-space: nowrap;
+      transition: all 0.1s ease;
+      background: #18181b;
+      border-radius: 8px 8px 0 0;
+      margin-right: 2px;
+    }
+    .personal-tab:hover {
+      color: #fff;
+      background: #27272a;
     }
     .personal-tab.active {
       color: #fff;
       border-bottom-color: #b91c1c;
-      font-weight: 500;
+      font-weight: 600;
+      background: #111113;
     }
     .personal-pane {
-      min-height: 120px;
+      min-height: 140px;
+      background: #111113;
+      border: 1px solid #3f3f46;
+      border-radius: 0 8px 8px 8px;
+      padding: 8px;
+      margin-top: -1px; /* seamless with tab bar */
+    }
+
+    /* Larger fonts for readability on live site */
+    body {
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    .library-item,
+    .curator-msg,
+    #curator-input,
+    .suggested-card {
+      font-size: 15px;
+    }
+    .text-xs {
+      font-size: 13px !important;
+    }
+    .text-sm {
+      font-size: 14px !important;
+    }
+    .text-[10px], .text-[11px], .text-[9px] {
+      font-size: 12px !important;
+    }
+    .text-[13px] {
+      font-size: 15px !important;
+    }
+    input, button, .movie-card {
+      font-size: 15px;
+    }
+    /* Top section larger fonts */
+    .top-header h1 {
+      font-size: 3.5rem;
+    }
+    .top-header p {
+      font-size: 15px;
+    }
+
+    /* Mobile friendliness: tighten for phones (iPhone SE, Android small screens) */
+    @media (max-width: 640px) {
+      .max-w-7xl { max-width: 100%; }
+      
+      /* Header */
+      .top-header h1 { font-size: 2.25rem !important; letter-spacing: -1.5px; }
+      .top-header p { font-size: 12px !important; }
+      
+      /* Tabs - more compact scrollable */
+      .personal-tab {
+        padding: 5px 9px !important;
+        font-size: 12px !important;
+        margin-right: 1px;
+      }
+      .personal-pane { padding: 6px; min-height: 110px; }
+      
+      /* Curator input - no longer giant */
+      #curator-input { font-size: 15px !important; }
+      .curator-msg { padding: 6px 10px; font-size: 13px; max-width: 88%; }
+      
+      /* Recommended header buttons - tighter */
+      .mb-3 > .flex.items-center.justify-between button {
+        font-size: 10px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+      }
+      
+      /* Mood chips smaller */
+      .mood-chip { font-size: 11px !important; padding: 3px 8px !important; }
+      
+      /* Search / Discover */
+      .search-input { font-size: 15px; }
+      #discover-sort, .inline-flex button { font-size: 11px !important; }
+      
+      /* Results cards (search/discover) - 2-col narrow cards */
+      .movie-card { padding: 10px !important; }
+      .movie-card .flex.gap-4 { gap: 10px; }
+      .movie-card img { width: 48px !important; height: 72px !important; }
+      
+      /* Action buttons row - prevent overflow, smaller */
+      .mt-2.flex.gap-2 > button,
+      .mt-3.flex.gap-2 > button {
+        font-size: 10px !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+      }
+      
+      /* Recs grid cards (top Recommended) */
+      #recs-grid .movie-card { padding: 8px !important; }
+      #recs-grid .movie-card img { width: 44px !important; height: 66px !important; }
+      #recs-grid .mt-3.flex.gap-2 > button { font-size: 9px !important; padding: 3px 6px !important; }
+      
+      /* Personal lists (To Watch etc rows) - buttons must fit */
+      .library-item { padding: 5px 6px !important; gap: 6px; font-size: 12px !important; }
+      .library-item button { font-size: 10px !important; padding: 1px 5px !important; }
+      #to-watch-content, #watched-content, #disliked-content { max-height: 180px !important; }
+      
+      /* Modal tighter */
+      #detail-modal .p-4 { padding: 12px; }
+      #detail-modal .text-xl { font-size: 1.1rem; }
+      
+      /* General */
+      .text-lg { font-size: 15px !important; }
+      button, input { min-height: 36px; } /* better touch */
     }
   </style>
 </head>
@@ -259,24 +383,24 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-5 pt-4 sm:pt-5 pb-8 sm:pb-10">
 
     <!-- Header -->
-    <div class="mb-3 flex items-end justify-between">
-      <div>
-        <h1 class="text-5xl font-semibold tracking-[-2.5px] text-white">Horror Roki</h1>
-        <p class="text-zinc-400 text-[14px] mt-1 tracking-tight">Find your next <span class="text-red-400/90">nightmare</span>.</p>
-        <p class="text-[11px] text-zinc-500 mt-0.5">Personal horror recommendations. No server required.</p>
+    <div class="mb-3 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 top-header">
+      <div class="min-w-0">
+        <h1 class="text-4xl sm:text-5xl font-semibold tracking-[-2px] sm:tracking-[-2.5px] text-white">Horror Roki</h1>
+        <p class="text-zinc-400 text-[13px] sm:text-[14px] mt-0.5 tracking-tight">Find your next <span class="text-red-400/90">nightmare</span>.</p>
+        <p class="text-[10px] sm:text-[11px] text-zinc-500 mt-0.5">Personal recs for horror, thrillers, sci-fi &amp; suspense. No server required.</p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
         <button onclick="installPWA()" id="install-btn"
-                class="hidden text-[10px] px-3 py-1.5 rounded-3xl bg-white text-black font-medium active:bg-zinc-200">
+                class="hidden text-[9px] sm:text-[10px] px-2 sm:px-3 py-1 sm:py-1.5 rounded-3xl bg-white text-black font-medium active:bg-zinc-200">
           Install
         </button>
         <button onclick="managePassword()" id="pass-btn"
-                class="text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
+                class="text-[9px] sm:text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
                 title="Set or change the shared password for the API (required for search, discover, recs &amp; Curator)">
           🔐 Pass
         </button>
         <button onclick="showSettings()" id="settings-btn"
-                class="text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
+                class="text-[9px] sm:text-[10px] px-2 py-1 rounded-3xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800 active:bg-zinc-900"
                 title="LLM settings, backup, import &amp; more">
           ⚙︎ Settings
         </button>
@@ -284,8 +408,8 @@
     </div>
 
     <!-- Top Personal Tabs (To Watch / Watched / Disliked / Curator moved to top as requested) -->
-    <div class="mb-4">
-      <div class="flex overflow-x-auto border-b border-zinc-700 text-sm">
+    <div class="mb-1">
+      <div class="flex overflow-x-auto bg-zinc-900 border border-zinc-700 rounded-t-2xl text-sm p-1" style="-webkit-overflow-scrolling: touch;">
         <button onclick="switchPersonalTab('towatch')" id="tab-towatch" class="personal-tab active">To Watch <span id="tab-towatch-count" class="text-[10px] text-zinc-400">(0)</span></button>
         <button onclick="switchPersonalTab('watched')" id="tab-watched" class="personal-tab">Watched <span id="tab-watched-count" class="text-[10px] text-zinc-400">(0)</span></button>
         <button onclick="switchPersonalTab('disliked')" id="tab-disliked" class="personal-tab">Disliked <span id="tab-disliked-count" class="text-[10px] text-zinc-400">(0)</span></button>
@@ -297,15 +421,15 @@
             <div>Upcoming nightmares</div>
             <button onclick="pickRandomToWatch()" class="text-[10px] px-1.5 py-px bg-zinc-800 rounded">🎲 Random</button>
           </div>
-          <div id="to-watch-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[140px] overflow-auto"></div>
+          <div id="to-watch-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[240px] overflow-auto"></div>
         </div>
         <div id="pane-watched" class="personal-pane hidden">
           <div class="text-xs text-zinc-500 mb-1">Watched library (drives recs)</div>
-          <div id="watched-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[140px] overflow-auto"></div>
+          <div id="watched-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[240px] overflow-auto"></div>
         </div>
         <div id="pane-disliked" class="personal-pane hidden">
           <div class="text-xs text-zinc-500 mb-1">Disliked (excluded from recs)</div>
-          <div id="disliked-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[140px] overflow-auto"></div>
+          <div id="disliked-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[240px] overflow-auto"></div>
         </div>
         <div id="pane-curator" class="personal-pane hidden">
           <div class="border border-zinc-800 rounded overflow-hidden">
@@ -316,11 +440,11 @@
                 <button onclick="clearCuratorChat()" class="text-[9px] px-1 py-px border border-zinc-700 rounded">🪦</button>
               </div>
             </div>
-            <div id="curator-messages" class="px-2 py-1 max-h-[110px] overflow-auto text-xs space-y-1 bg-[#111113]"></div>
+            <div id="curator-messages" class="px-2 py-1 max-h-[220px] overflow-auto text-xs space-y-1 bg-[#111113]"></div>
             <div class="p-1 border-t border-zinc-800 bg-zinc-950">
               <div class="flex gap-1">
-                <input id="curator-input" type="text" placeholder="Ask Curator..." class="flex-1 bg-zinc-900 border border-zinc-700 text-xs rounded px-1.5 py-0.5 outline-none" onkeypress="if (event.key === 'Enter') sendToCurator()">
-                <button onclick="sendToCurator()" class="px-2 py-0.5 bg-red-900 text-white text-xs rounded">Send</button>
+                <input id="curator-input" type="text" placeholder="Ask Curator..." class="flex-1 bg-zinc-900 border border-zinc-700 text-base sm:text-lg rounded px-3 py-1.5 outline-none" onkeypress="if (event.key === 'Enter') sendToCurator()">
+                <button onclick="sendToCurator()" class="px-3 py-1 bg-red-900 text-white text-sm rounded">Send</button>
               </div>
               <div id="curator-status" class="text-[9px] text-zinc-500 mt-0.5">Grounded • persistent until clear</div>
             </div>
@@ -329,108 +453,93 @@
       </div>
     </div>
 
-    <!-- Prominent My Services (kept compact) -->
-    <div class="mb-6">
+    <!-- Recommended for you (top area, with Refresh Pool + Recompute buttons) -->
+    <div class="mb-3">
       <div class="flex items-center justify-between mb-2 px-1">
         <div>
-          <div class="font-semibold text-sm">My Services</div>
-          <div class="text-xs text-zinc-500">Highlight what you subscribe to</div>
+          <div class="font-semibold text-sm">Recommended for you</div>
+          <div class="text-xs text-zinc-500">Based on what you’ve watched • client-side taste boost</div>
         </div>
-        <button onclick="resetMyServices()" class="text-xs text-zinc-400 hover:text-zinc-300">Reset</button>
+        <div class="flex items-center gap-2">
+          <button onclick="refreshRecPool()" 
+                  class="text-[11px] px-3 py-1 rounded-3xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 active:bg-zinc-600">Refresh Pool</button>
+          <button onclick="recomputeRecommendations()" 
+                  class="text-[11px] px-3 py-1 rounded-3xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 active:bg-zinc-600">Recompute</button>
+        </div>
       </div>
-      <div class="flex flex-wrap gap-1">
-        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-netflix" onchange="savePreferences()" class="accent-white" checked> Netflix</label>
-        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-hulu" onchange="savePreferences()" class="accent-white" checked> Hulu</label>
-        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-max" onchange="savePreferences()" class="accent-white" checked> Max</label>
-        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-prime" onchange="savePreferences()" class="accent-white" checked> Prime</label>
-        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-peacock" onchange="savePreferences()" class="accent-white" checked> Peacock</label>
-        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-apple" onchange="savePreferences()" class="accent-white" checked> Apple+</label>
-        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-paramount" onchange="savePreferences()" class="accent-white" checked> Paramount</label>
+
+      <!-- Mood / subgenre chips (dark genres, affect client boost + filter) -->
+      <div class="flex flex-wrap gap-1.5 mb-3 px-1" id="mood-chips">
+        <!-- Populated by JS: All + Slow burn, Psychological, Supernatural, Folk, Gory -->
+      </div>
+
+      <div id="recs-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        <!-- Populated by recomputeRecommendations() -->
+      </div>
+      <div id="recs-empty" class="hidden text-center py-4 text-zinc-500 text-sm">
+        Add movies to Watched for personalized recs.
       </div>
     </div>
-
-
 
     <!-- Search -->
-    <div class="mb-3">
-      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
-        <div class="flex gap-2 items-center mb-3">
+    <div class="mb-1">
+      <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-3 shadow-sm">
+        <div class="flex gap-2 items-center">
           <div class="relative flex-1">
-            <i class="fa-solid fa-search absolute left-4 top-3.5 text-zinc-500"></i>
+            <i class="fa-solid fa-search absolute left-3 top-2.5 text-zinc-500"></i>
             <input id="search-input" type="text" placeholder="Search for a movie or show..."
-                   class="search-input w-full bg-zinc-950 border border-zinc-700 focus:border-zinc-400 pl-11 pr-5 py-3.5 rounded-3xl text-[16px] outline-none placeholder:text-zinc-500"
+                   class="search-input w-full bg-zinc-950 border border-zinc-700 focus:border-zinc-400 pl-9 pr-3 py-2 rounded-3xl text-base outline-none placeholder:text-zinc-500"
                    onkeypress="if (event.key === 'Enter') performSearch()">
-          </div>
-          <label class="flex items-center gap-2 text-[15px] text-zinc-300 whitespace-nowrap cursor-pointer select-none ml-1">
-            <input type="checkbox" id="my-services-only" onchange="performSearch()" class="accent-white scale-110">
-            <span class="text-[15px]">My services</span>
-          </label>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <div class="inline-flex rounded-3xl bg-zinc-950 border border-zinc-700 p-0.5 text-sm">
-            <button onclick="setSearchType('movie')" id="search-type-movie"
-                    class="px-3.5 py-1 rounded-3xl font-medium bg-white text-black text-[13px]">Movies</button>
-            <button onclick="setSearchType('tv')" id="search-type-tv"
-                    class="px-3.5 py-1 rounded-3xl font-medium text-zinc-300 text-[13px]">TV Shows</button>
-          </div>
-          <div class="text-[12px] text-zinc-500 ml-2">
-            Search specific titles
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Discover by genre -->
-    <div class="mb-3">
-      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
-        <div class="flex items-center justify-between mb-3 px-1">
-          <div class="text-[13px] font-medium text-zinc-400">Discover horror — filter by genre, rating &amp; decade</div>
-          <button onclick="clearSelectedGenres()" class="text-[11px] text-zinc-500 hover:text-zinc-400">Clear all</button>
+    <!-- Discover by genre (condensed) -->
+    <div class="mb-1">
+      <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-3 shadow-sm">
+        <div class="flex items-center justify-between mb-2 px-1">
+          <div class="text-xs font-medium text-zinc-400">Discover — genre / rating / decade</div>
+          <button onclick="clearSelectedGenres()" class="text-[10px] text-zinc-500 hover:text-zinc-400">Clear</button>
         </div>
         
-        <!-- Genre chips -->
-        <div id="genre-chips" class="flex flex-wrap gap-1.5 mb-3"></div>
+        <!-- Genre chips (tighter) -->
+        <div id="genre-chips" class="flex flex-wrap gap-1 mb-2"></div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <!-- Rating filter -->
           <div>
-            <div class="text-[11px] text-zinc-500 px-1 mb-1">Minimum rating (TMDB)</div>
-            <div id="rating-chips" class="flex flex-wrap gap-1.5"></div>
+            <div class="text-[10px] text-zinc-500 px-1 mb-0.5">Min rating</div>
+            <div id="rating-chips" class="flex flex-wrap gap-1"></div>
           </div>
 
           <!-- Decade filter -->
           <div>
-            <div class="text-[11px] text-zinc-500 px-1 mb-1">Decade</div>
-            <div id="decade-chips" class="flex flex-wrap gap-1.5"></div>
+            <div class="text-[10px] text-zinc-500 px-1 mb-0.5">Decade</div>
+            <div id="decade-chips" class="flex flex-wrap gap-1"></div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 flex-wrap mt-4 pt-4 border-t border-zinc-800">
+        <div class="flex items-center gap-1 flex-wrap mt-2 pt-2 border-t border-zinc-800 text-xs">
           <!-- Media type toggle -->
-          <div class="inline-flex rounded-3xl bg-zinc-950 border border-zinc-700 p-0.5 text-sm">
+          <div class="inline-flex rounded-3xl bg-zinc-950 border border-zinc-700 p-0.5">
             <button onclick="setDiscoverType('movie')" id="type-movie"
-                    class="px-4 py-1 rounded-3xl font-medium bg-white text-black">Movies</button>
+                    class="px-3 py-0.5 rounded-3xl font-medium bg-white text-black text-xs">Movies</button>
             <button onclick="setDiscoverType('tv')" id="type-tv"
-                    class="px-4 py-1 rounded-3xl font-medium text-zinc-300">TV Shows</button>
+                    class="px-3 py-0.5 rounded-3xl font-medium text-zinc-300 text-xs">TV</button>
           </div>
 
           <!-- Sort -->
           <select id="discover-sort" onchange="performDiscover()"
-                  class="bg-zinc-950 border border-zinc-700 rounded-3xl px-3 py-1.5 text-sm text-zinc-200 outline-none">
-            <option value="popularity.desc">Most Popular</option>
-            <option value="vote_average.desc">Highest Rated</option>
-            <option value="release_date.desc">Newest First</option>
-            <option value="release_date.asc">Oldest First</option>
+                  class="bg-zinc-950 border border-zinc-700 rounded-3xl px-2 py-0.5 text-xs text-zinc-200 outline-none">
+            <option value="popularity.desc">Popular</option>
+            <option value="vote_average.desc">Rated</option>
+            <option value="release_date.desc">New</option>
+            <option value="release_date.asc">Old</option>
           </select>
 
-          <label class="flex items-center gap-1.5 text-sm text-zinc-300 cursor-pointer select-none ml-1">
-            <input type="checkbox" id="discover-my-services" class="accent-white scale-110" checked>
-            <span class="text-[15px]">Only my services</span>
-          </label>
-
           <button onclick="performDiscover()"
-                  class="ml-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-400 text-white text-sm font-semibold rounded-3xl shadow-lg shadow-indigo-950/50 transition-all active:scale-[0.985]">
+                  class="ml-auto px-4 py-1 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-400 text-white text-xs font-semibold rounded-3xl shadow-sm transition-all active:scale-[0.985]">
             Browse
           </button>
         </div>
@@ -451,64 +560,38 @@
       </button>
     </div>
 
-    <!-- Recommended for you (Horror Roki personalized - port of taste boost + mood from current setup) -->
-    <div class="mb-6 mt-2">
-      <div class="flex items-center justify-between mb-2 px-1">
-        <div>
-          <div class="font-semibold text-sm">Recommended for you</div>
-          <div class="text-xs text-zinc-500">Based on what you’ve watched • client-side taste boost</div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="refreshRecPool()" 
-                  class="text-[11px] px-3 py-1 rounded-3xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 active:bg-zinc-600">Refresh Pool</button>
-          <button onclick="recomputeRecommendations()" 
-                  class="text-[11px] px-3 py-1 rounded-3xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:bg-zinc-700 active:bg-zinc-600">Recompute</button>
-        </div>
-      </div>
 
-      <!-- Mood / subgenre chips (horror specific, affect client boost + filter) -->
-      <div class="flex flex-wrap gap-1.5 mb-3 px-1" id="mood-chips">
-        <!-- Populated by JS: All + Slow burn, Psychological, Supernatural, Folk, Gory -->
-      </div>
-
-      <div id="recs-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-        <!-- Populated by renderRecommendations() -->
-      </div>
-      <div id="recs-empty" class="hidden text-center py-4 text-zinc-500 text-sm">
-        Add movies to Watched for personalized recs.
-      </div>
-    </div>
 
 
 
     <!-- Detail Modal -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div class="bg-zinc-900 border border-zinc-700 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-auto">
-        <div class="p-6">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <div id="modal-title" class="text-2xl font-semibold"></div>
-              <div id="modal-meta" class="text-zinc-400 mt-1"></div>
+        <div class="p-4 sm:p-6">
+          <div class="flex justify-between items-start mb-3 sm:mb-4">
+            <div class="min-w-0 pr-2">
+              <div id="modal-title" class="text-xl sm:text-2xl font-semibold leading-tight"></div>
+              <div id="modal-meta" class="text-zinc-400 mt-1 text-sm"></div>
             </div>
-            <button onclick="closeModal()" class="text-2xl text-zinc-400 hover:text-white">×</button>
+            <button onclick="closeModal()" class="text-2xl text-zinc-400 hover:text-white flex-shrink-0">×</button>
           </div>
 
-          <div id="modal-overview" class="text-zinc-300 leading-relaxed mb-5"></div>
+          <div id="modal-overview" class="text-zinc-300 leading-relaxed mb-3 text-sm sm:text-base"></div>
 
-          <div id="modal-genres" class="flex flex-wrap gap-2 mb-5"></div>
+          <div id="modal-genres" class="flex flex-wrap gap-1 sm:gap-2 mb-3"></div>
 
-          <div class="mb-5">
-            <div class="text-sm font-medium text-zinc-400 mb-2">Where to watch</div>
+          <div class="mb-2">
+            <div class="text-[10px] font-medium text-zinc-400 mb-1">Where to watch</div>
             <div id="modal-availability"></div>
           </div>
 
-          <div class="flex gap-3">
+          <div class="flex gap-2 sm:gap-3">
             <button id="modal-add-button"
-                    class="flex-1 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white text-sm font-semibold rounded-3xl">
+                    class="flex-1 px-4 sm:px-5 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white text-sm font-semibold rounded-3xl">
               Add to My List
             </button>
             <button onclick="closeModal()"
-                    class="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium rounded-3xl">
+                    class="px-4 sm:px-5 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-medium rounded-3xl">
               Close
             </button>
           </div>
@@ -519,8 +602,8 @@
     <!-- Initial state / welcome message -->
     <div id="initial-state" class="text-center py-12 text-zinc-400">
       <i class="fa-solid fa-search text-4xl mb-4 opacity-40"></i>
-      <p class="text-lg text-zinc-300">Search above or use Discover / Recommended below</p>
-      <p class="text-sm mt-1">Horror recs powered by your watched library + The Curator.</p>
+      <p class="text-lg text-zinc-300">Recommended for you is at the top • Search or Discover below</p>
+      <p class="text-sm mt-1">Dark cinema recs (horror / thrillers / sci-fi / suspense) powered by your watched library + The Curator.</p>
     </div>
 
   </div>
@@ -535,12 +618,8 @@
       {id: 878, name: 'Sci-Fi'}, {id: 53, name: 'Thriller'}
     ];
 
-    const SERVICE_TO_PROVIDER_ID = {
-      netflix: 8, hulu: 15, max: 1899, prime: 9, disney: 337,
-      peacock: 386, apple: 350, paramount: 531
-    };
-
-    // Nice colors for provider pills
+    // Nice colors for provider pills (still used in modal for "where to watch")
+    // Provider colors for the "where to watch" modal (My Services UI removed, but modal still shows availability)
     const PROVIDER_COLORS = {
       'Netflix': 'bg-red-600 text-white',
       'Hulu': 'bg-green-600 text-white',
@@ -616,8 +695,11 @@
       };
     }
 
-    async function apiFetch(path) {
+    async function apiFetch(path, options = {}) {
       const headers = getAuthHeaders();
+      if (options.body && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+      }
       let url = path;
       if (apiBase) {
         // Support absolute Worker URL for local testing / tunnels / direct calls
@@ -625,7 +707,14 @@
         const p = path.startsWith('/') ? path : '/' + path;
         url = base + p;
       }
-      const res = await fetch(url, { headers });
+      const fetchOptions = {
+        method: options.method || 'GET',
+        headers,
+      };
+      if (options.body) {
+        fetchOptions.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+      }
+      const res = await fetch(url, fetchOptions);
       console.log('[Horror Roki] apiFetch to:', url, 'status will be checked next');
       if (res.status === 401) {
         // Bad or missing password
@@ -659,7 +748,12 @@
         err.details = errData;
         throw err;
       }
-      return res.json();
+      // For non-JSON responses (rare), just return the response
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        return res.json();
+      }
+      return res;
     }
 
     const RATING_OPTIONS = [0, 6, 7, 7.5, 8];
@@ -806,7 +900,6 @@
       }
 
       const genreIds = Array.from(selectedGenres);
-      const onlyMine = document.getElementById('discover-my-services')?.checked;
 
       const sortValue = document.getElementById('discover-sort')?.value || 'popularity.desc';
       let url = `/api/tmdb/3/discover/${currentDiscoverType}?language=en-US&sort_by=${sortValue}&include_adult=false&watch_region=US&page=${currentDiscoverPage}`;
@@ -820,16 +913,6 @@
         const dateField = currentDiscoverType === 'movie' ? 'primary_release_date' : 'first_air_date';
         url += `&${dateField}.gte=${selectedDecade.gte}&${dateField}.lte=${selectedDecade.lte}`;
       }
-      if (onlyMine) {
-        const services = getUserServices();
-        const providerIds = Object.keys(services)
-          .filter(k => services[k])
-          .map(k => SERVICE_TO_PROVIDER_ID[k])
-          .filter(Boolean);
-        if (providerIds.length > 0) {
-          url += `&with_watch_providers=${providerIds.join('|')}`;
-        }
-      }
 
       try {
         const data = await apiFetch(url);
@@ -838,7 +921,7 @@
           if (reset) {
             container.innerHTML = `<div class="text-center py-10 text-zinc-400">
               <p>No titles found for those filters.</p>
-              <p class="text-xs mt-2 text-zinc-500">Try removing a genre, lowering the minimum rating, or unchecking "My services".</p>
+              <p class="text-xs mt-2 text-zinc-500">Try removing a genre or lowering the minimum rating.</p>
             </div>`;
           }
           document.getElementById('load-more-container').classList.add('hidden');
@@ -923,9 +1006,6 @@
       }
       if (minRating > 0) filters.push(`Rating: ${minRating}+`);
       if (selectedDecade) filters.push(`Decade: ${selectedDecade.label}`);
-      if (document.getElementById('discover-my-services')?.checked) {
-        filters.push('My Services');
-      }
 
       if (filters.length === 0) {
         container.classList.add('hidden');
@@ -1052,6 +1132,7 @@
       renderToWatch();
       // also refresh legacy quick list if desired
       try { renderWatchlist(); } catch(e){}
+      pushToServer(); // server sync (debounced)
     }
     function saveWatched() {
       localStorage.setItem('horror_roki_watched', JSON.stringify(watchedList));
@@ -1059,12 +1140,14 @@
       renderWatched();
       // Recompute recs when library changes (taste changed)
       if (currentRecPool.length) recomputeRecommendations();
+      pushToServer();
     }
     function saveDisliked() {
       localStorage.setItem('horror_roki_disliked', JSON.stringify(dislikedList));
       updateLibraryCounts();
       renderDisliked();
       if (currentRecPool.length) recomputeRecommendations();
+      pushToServer();
     }
 
     function updateLibraryCounts() {
@@ -1166,23 +1249,111 @@
       saveDisliked();
     }
 
+    // ===================== SERVER SYNC (for cross-device / phone persistence) =====================
+    // Uses the same Worker + PASSWORD. Requires you to:
+    // 1. Create a KV namespace in Cloudflare (Workers & Pages → KV)
+    // 2. Bind it to your Worker as DATA_KV (Worker → Settings → Variables → KV Namespace Bindings)
+    // 3. Redeploy the Worker.
+    // The frontend falls back gracefully to localStorage if the binding isn't set up yet.
+    // Data shape is the same as the existing backup JSON.
+
+    let _syncTimeout = null;
+
+    async function pushToServer(immediate = false) {
+      if (!apiBase && !location.hostname.includes('pages.dev')) {
+        // No worker configured — only localStorage
+        return;
+      }
+      const payload = {
+        watched: watchedList,
+        to_watch: toWatchList,
+        disliked: dislikedList,
+        chat_history: chatHistory.slice(-30),
+        llm_config: llmConfig,
+        synced_at: new Date().toISOString(),
+        version: 'server-sync-1'
+      };
+
+      const doPush = async () => {
+        try {
+          await apiFetch('/api/data', { method: 'POST', body: payload });
+          console.log('[Horror Roki] Pushed data to server KV');
+        } catch (e) {
+          console.warn('[Horror Roki] Server push failed (will retry on next change):', e.message);
+        }
+      };
+
+      if (immediate) {
+        await doPush();
+      } else {
+        clearTimeout(_syncTimeout);
+        _syncTimeout = setTimeout(doPush, 1200); // debounce writes
+      }
+    }
+
+    async function syncFromServer() {
+      if (!apiBase && !location.hostname.includes('pages.dev')) return null;
+      try {
+        const serverData = await apiFetch('/api/data');
+        if (!serverData || typeof serverData !== 'object') return null;
+
+        let changed = false;
+
+        if (Array.isArray(serverData.watched) && serverData.watched.length > (watchedList?.length || 0)) {
+          watchedList = serverData.watched;
+          localStorage.setItem('horror_roki_watched', JSON.stringify(watchedList));
+          changed = true;
+        }
+        if (Array.isArray(serverData.to_watch)) {
+          toWatchList = serverData.to_watch;
+          localStorage.setItem('horror_roki_towatch', JSON.stringify(toWatchList));
+          changed = true;
+        }
+        if (Array.isArray(serverData.disliked) && serverData.disliked.length > (dislikedList?.length || 0)) {
+          dislikedList = serverData.disliked;
+          localStorage.setItem('horror_roki_disliked', JSON.stringify(dislikedList));
+          changed = true;
+        }
+        if (Array.isArray(serverData.chat_history) && serverData.chat_history.length > (chatHistory?.length || 0)) {
+          chatHistory = serverData.chat_history;
+          localStorage.setItem('horror_roki_chat', JSON.stringify(chatHistory));
+          changed = true;
+        }
+
+        if (changed) {
+          updateAllLibraryRenders();
+          try { renderCuratorMessages(); } catch(e){}
+          console.log('[Horror Roki] Pulled fresher data from server KV');
+        }
+        return serverData;
+      } catch (e) {
+        // Server not available or no KV bound yet — silently fall back to localStorage
+        if (!e.message?.includes('DATA_KV')) {
+          console.log('[Horror Roki] No server data (using local only):', e.message);
+        }
+        return null;
+      }
+    }
+
     function renderToWatch() {
       const c = document.getElementById('to-watch-content');
       if (!c) return;
       if (!toWatchList.length) {
-        c.innerHTML = `<div class="text-xs text-zinc-500 px-1">Empty. Add from cards, search results, or Curator SUGGESTED.</div>`;
+        c.innerHTML = `<div class="text-xs text-zinc-500 px-1">Empty. Add from cards, search results, or Curator SUGGESTED.<br><span class="text-[10px] opacity-70">Data is private to this browser/device only.</span></div>`;
         return;
       }
       let html = '';
       toWatchList.forEach((item, idx) => {
         const year = (item.release_date || '').slice(0,4);
-        html += `<div class="library-item text-sm">
+        const poster = item.poster_path ? `<img src="https://image.tmdb.org/t/p/w92${item.poster_path}" class="w-8 h-11 rounded object-cover flex-shrink-0 border border-zinc-700" alt="">` : `<div class="w-8 h-11 bg-zinc-800 rounded flex-shrink-0"></div>`;
+        html += `<div class="library-item text-sm items-center">
+          ${poster}
           <div class="flex-1 min-w-0">
             <div class="font-medium truncate">${item.title} <span class="text-[10px] text-zinc-500">${year}</span></div>
           </div>
-          <button onclick="markWatchedFromToWatch(${idx})" class="text-[11px] px-2 py-0.5 rounded-xl bg-emerald-800 text-emerald-100">⭐ Rate &amp; Watched</button>
-          <button onclick="dislikeFromToWatch(${idx})" class="text-[11px] px-2 py-0.5 rounded-xl border border-zinc-700 text-zinc-400">👎</button>
-          <button onclick="removeFromToWatch(${item.id}, '${item._mediaType}')" class="text-[11px] text-red-400 px-1">×</button>
+          <button onclick="markWatchedFromToWatch(${idx})" class="text-[10px] px-1.5 py-px rounded-xl bg-emerald-800 text-emerald-100">⭐ Rate</button>
+          <button onclick="dislikeFromToWatch(${idx})" class="text-[10px] px-1 py-px rounded-xl border border-zinc-700 text-zinc-400">👎</button>
+          <button onclick="removeFromToWatch(${item.id}, '${item._mediaType}')" class="text-[10px] text-red-400 px-1">×</button>
         </div>`;
       });
       c.innerHTML = html;
@@ -1191,10 +1362,29 @@
     function markWatchedFromToWatch(idx) {
       const item = toWatchList[idx];
       if (!item) return;
-      // Simple rating prompt (0-5); could be stars UI later
-      const r = prompt('Rate 1-5 (5 = loved)? Leave blank for no rating.', '4');
-      const rating = r ? Math.max(1, Math.min(5, parseInt(r,10) || 4)) : null;
-      addToWatched(item, rating);
+      const container = document.getElementById('to-watch-content');
+      const row = container && container.children[idx] ? container.children[idx] : null;
+      if (!row) {
+        // rare fallback: default to 4 to avoid jarring prompt
+        addToWatched(item, 4);
+        return;
+      }
+      // Hide action buttons and show inline rating chooser (no jarring front-and-center prompt dialog)
+      row.querySelectorAll('button').forEach(b => b.style.display = 'none');
+      const rateDiv = document.createElement('div');
+      rateDiv.className = 'flex gap-0.5 text-xs ml-2';
+      for(let r=1; r<=5; r++) {
+        const b = document.createElement('button');
+        b.textContent = r + '★';
+        b.className = 'px-1 py-0.5 rounded bg-zinc-700 hover:bg-emerald-600 text-[10px]';
+        b.onclick = () => {
+          addToWatched(item, r);
+          row.style.opacity = '0.4';
+          rateDiv.remove();
+        };
+        rateDiv.appendChild(b);
+      }
+      row.appendChild(rateDiv);
     }
     function dislikeFromToWatch(idx) {
       const item = toWatchList[idx];
@@ -1205,12 +1395,14 @@
     function renderWatched() {
       const c = document.getElementById('watched-content');
       if (!c) return;
-      if (!watchedList.length) { c.innerHTML = `<div class="text-xs text-zinc-500 px-1">No watched yet.</div>`; return; }
+      if (!watchedList.length) { c.innerHTML = `<div class="text-xs text-zinc-500 px-1">No watched yet.<br><span class="text-[10px] opacity-70">Data lives only on this device/browser. Use ⚙︎ Settings → Backup/Import to transfer.</span></div>`; return; }
       let html = '';
       watchedList.slice(0,12).forEach((item, idx) => {
         const year = (item.release_date || '').slice(0,4);
         const r = item.rating ? ` · ${item.rating}★` : '';
-        html += `<div class="library-item text-sm">
+        const poster = item.poster_path ? `<img src="https://image.tmdb.org/t/p/w92${item.poster_path}" class="w-8 h-11 rounded object-cover flex-shrink-0 border border-zinc-700" alt="">` : `<div class="w-8 h-11 bg-zinc-800 rounded flex-shrink-0"></div>`;
+        html += `<div class="library-item text-sm items-center">
+          ${poster}
           <div class="flex-1 truncate">${item.title} <span class="text-[10px] text-zinc-500">${year}${r}</span></div>
           <button onclick="removeFromWatched(${item.id}, '${item._mediaType}')" class="text-[11px] text-red-400 px-1">×</button>
         </div>`;
@@ -1222,10 +1414,12 @@
     function renderDisliked() {
       const c = document.getElementById('disliked-content');
       if (!c) return;
-      if (!dislikedList.length) { c.innerHTML = `<div class="text-xs text-zinc-500 px-1">Nothing disliked.</div>`; return; }
+      if (!dislikedList.length) { c.innerHTML = `<div class="text-xs text-zinc-500 px-1">Nothing disliked.<br><span class="text-[10px] opacity-70">Data lives only on this device/browser. Use ⚙︎ Settings → Backup/Import to transfer.</span></div>`; return; }
       let html = '';
       dislikedList.slice(0,8).forEach(item => {
-        html += `<div class="library-item text-sm">
+        const poster = item.poster_path ? `<img src="https://image.tmdb.org/t/p/w92${item.poster_path}" class="w-8 h-11 rounded object-cover flex-shrink-0 border border-zinc-700" alt="">` : `<div class="w-8 h-11 bg-zinc-800 rounded flex-shrink-0"></div>`;
+        html += `<div class="library-item text-sm items-center">
+          ${poster}
           <div class="flex-1 truncate">${item.title}</div>
           <button onclick="removeFromDisliked(${item.id}, '${item._mediaType}')" class="text-[11px] text-red-400 px-1">×</button>
         </div>`;
@@ -1272,6 +1466,11 @@
       const availEl = document.getElementById('modal-availability');
       const addBtn = document.getElementById('modal-add-button');
 
+      // Make sure Where to watch + bottom action row are visible for normal movie modals
+      const whereWrap = document.querySelector('#detail-modal .mb-2');
+      if (whereWrap) whereWrap.style.display = '';
+      if (addBtn && addBtn.parentElement) addBtn.parentElement.style.display = '';
+
       modal.classList.remove('hidden');
       titleEl.textContent = item.title || item.name || 'Untitled';
       metaEl.innerHTML = '';
@@ -1299,17 +1498,19 @@
         overviewEl.textContent = 'Could not load additional details (check password with 🔐 Pass button).';
       }
 
-      // Availability
+      // Availability (compact bubbles so actions stay close)
       if (item.providers) {
         let availHtml = '';
         const groups = { stream: item.providers.flatrate || [], rent: item.providers.rent || [], buy: item.providers.buy || [] };
         Object.entries(groups).forEach(([type, items]) => {
           if (!items.length) return;
           const label = type === 'stream' ? 'Streaming' : type.charAt(0).toUpperCase() + type.slice(1);
-          availHtml += `<div class="mb-2"><div class="text-xs text-emerald-400 mb-1">${label}</div>`;
+          const labelColor = type === 'stream' ? 'text-emerald-400' : type === 'rent' ? 'text-amber-400' : 'text-sky-400';
+          availHtml += `<div class="mb-1"><div class="text-[9px] font-medium mb-0.5 ${labelColor}">${label}</div>`;
           items.forEach(p => {
             const name = getProviderName(p);
-            availHtml += `<span class="inline-block mr-2 mb-1 text-sm">${name}</span>`;
+            const colorClass = PROVIDER_COLORS[name] || 'bg-zinc-700 text-zinc-200';
+            availHtml += `<span class="inline-block mr-1 mb-0.5 text-[9px] px-1.5 py-px rounded-2xl ${colorClass}">${name}</span>`;
           });
           availHtml += `</div>`;
         });
@@ -1324,7 +1525,7 @@
       if (!actions) {
         actions = document.createElement('div');
         actions.id = 'modal-actions-row';
-        actions.className = 'flex gap-2 mt-4';
+        actions.className = 'flex gap-2 mt-2';
         const footer = addBtn.parentNode;
         footer.appendChild(actions);
       }
@@ -1335,9 +1536,22 @@
       `;
       document.getElementById('ma-towatch').onclick = () => { addToToWatch(item); closeModal(); };
       document.getElementById('ma-watched').onclick = () => {
-        const r = prompt('Rate 1-5?', '4');
-        addToWatched(item, r ? parseInt(r,10) : null);
-        closeModal();
+        // Inline in modal to avoid extra dialog
+        const actions = document.getElementById('modal-actions-row');
+        if (actions) actions.innerHTML = '<span class="text-xs">Rate:</span>';
+        const rateDiv = document.createElement('div');
+        rateDiv.className = 'flex gap-1 mt-1';
+        for(let r=1; r<=5; r++) {
+          const b = document.createElement('button');
+          b.textContent = r + '★';
+          b.className = 'text-xs px-1 py-0.5 rounded bg-zinc-700 hover:bg-emerald-600';
+          b.onclick = () => {
+            addToWatched(item, r);
+            closeModal();
+          };
+          rateDiv.appendChild(b);
+        }
+        if (actions) actions.appendChild(rateDiv);
       };
       document.getElementById('ma-dislike').onclick = () => { addToDisliked(item); closeModal(); };
     }
@@ -1357,69 +1571,9 @@
 
 
 
-    function savePreferences() {
-      const prefs = {
-        netflix: document.getElementById('svc-netflix').checked,
-        hulu: document.getElementById('svc-hulu').checked,
-        max: document.getElementById('svc-max').checked,
-        prime: document.getElementById('svc-prime').checked,
-        disney: document.getElementById('svc-disney').checked,
-        peacock: document.getElementById('svc-peacock').checked,
-        apple: document.getElementById('svc-apple').checked,
-        paramount: document.getElementById('svc-paramount').checked,
-      };
-      localStorage.setItem('roki_services', JSON.stringify(prefs));
-    }
-
-    function loadPreferences() {
-      const saved = localStorage.getItem('roki_services');
-      const map = { netflix: 'svc-netflix', hulu: 'svc-hulu', max: 'svc-max', prime: 'svc-prime', disney: 'svc-disney', peacock: 'svc-peacock', apple: 'svc-apple', paramount: 'svc-paramount' };
-
-      let prefs = {};
-
-      if (saved) {
-        prefs = JSON.parse(saved);
-      } else {
-        // Default: Select all services except Disney+ (user doesn't subscribe)
-        prefs = {
-          netflix: true,
-          hulu: true,
-          max: true,
-          prime: true,
-          disney: false,
-          peacock: true,
-          apple: true,
-          paramount: true
-        };
-        // Save defaults so they persist
-        localStorage.setItem('roki_services', JSON.stringify(prefs));
-      }
-
-      Object.keys(map).forEach(k => {
-        const el = document.getElementById(map[k]);
-        if (el) el.checked = !!prefs[k];
-      });
-
-      return prefs;
-    }
-
-    function getUserServices() {
-      const saved = localStorage.getItem('roki_services');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-      // Return same defaults as loadPreferences if nothing saved yet
-      return {
-        netflix: true,
-        hulu: true,
-        max: true,
-        prime: true,
-        disney: false,
-        peacock: true,
-        apple: true,
-        paramount: true
-      };
-    }
+    // My Services UI and filtering removed (user no longer wants to see subscribed services visually).
+    // getUserServices now always returns empty so no provider filtering happens.
+    function getUserServices() { return {}; }
 
     // TMDB
     async function performSearch() {
@@ -1531,32 +1685,23 @@
           Object.entries(groups).forEach(([type, items]) => {
             if (!items.length) return;
             const label = type === 'stream' ? 'Streaming' : type.charAt(0).toUpperCase() + type.slice(1);
-            const icon = type === 'stream' ? 'fa-play' : type === 'rent' ? 'fa-shopping-cart' : 'fa-dollar-sign';
-            const color = type === 'stream' ? 'emerald' : type === 'rent' ? 'amber' : 'sky';
-
             const labelColor = type === 'stream' ? 'text-emerald-400' : type === 'rent' ? 'text-amber-400' : 'text-sky-400';
-            const labelIcon = type === 'stream' ? 'fa-play' : type === 'rent' ? 'fa-shopping-cart' : 'fa-dollar-sign';
             const isStreaming = type === 'stream';
             const tableClasses = isStreaming 
               ? 'provider-table streaming' 
               : 'provider-table';
-            html += `<div class="mt-4 first:mt-0"><div class="text-[11px] font-semibold tracking-wider mb-1.5 px-1 flex items-center gap-2 ${labelColor}"><i class="fa-solid ${labelIcon}"></i> ${label}</div><div class="bg-zinc-950 rounded-2xl px-3 py-1.5 ${tableClasses}">`;
+            // Compact bubbles: tiny labels + tight horizontal pills row (keeps breakdown but uses far less vertical space)
+            html += `<div class="mt-1.5 first:mt-0"><div class="text-[9px] font-medium mb-0.5 px-0.5 ${labelColor}">${label}</div><div class="flex flex-wrap gap-1 bg-zinc-950 rounded-xl px-1.5 py-1 ${tableClasses}">`;
             items.forEach(p => {
               const name = getProviderName(p);
               const isMine = Object.keys(services).some(k => services[k] && name.toLowerCase().includes(k));
               const colorClass = PROVIDER_COLORS[name] || 'bg-zinc-700 text-zinc-200';
-              html += `
-                <div class="flex items-center py-2 border-b border-zinc-800 last:border-none transition-all hover:bg-white/5 rounded-lg -mx-1 px-1 ${isMine ? 'border-l-2 border-emerald-500 pl-2' : ''}">
-                  <div class="flex items-center gap-2 text-sm">
-                    <span class="px-2 py-0.5 rounded-2xl text-xs font-medium ${colorClass}">${name}</span>
-                    ${isMine ? '<span class="text-[9px] px-1.5 py-px bg-emerald-900 text-emerald-400 rounded">Yours</span>' : ''}
-                  </div>
-                </div>`;
+              html += `<span class="inline-flex items-center px-1.5 py-px rounded-2xl text-[9px] font-medium leading-none ${colorClass}">${name}${isMine ? '<span class="ml-0.5 text-[8px] opacity-70">✓</span>' : ''}</span>`;
             });
             html += `</div></div>`;
           });
         } else {
-          html = `<div class="text-[12px] text-zinc-400 py-3 px-1">No availability data</div>`;
+          html = `<div class="text-[10px] text-zinc-500 py-1 px-1">No availability data</div>`;
         }
 
         const mediaLabel = (m._mediaType || 'movie') === 'tv' ? 'TV' : 'Movie';
@@ -1570,8 +1715,8 @@
             <div class="flex-1 min-w-0 pt-1">
               <div>
                 <div class="flex items-start justify-between gap-2">
-                  <div class="font-semibold text-[18px] leading-[1.15] tracking-[-0.2px] pr-1">${title}</div>
-                  <span class="text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${mediaColor}">${mediaLabel}</span>
+                  <div class="font-semibold text-base sm:text-[17px] leading-[1.15] tracking-[-0.2px] pr-1 truncate">${title}</div>
+                  <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium shrink-0 ${mediaColor}">${mediaLabel}</span>
                 </div>
                 <div class="flex items-center gap-2 mt-1.5 flex-wrap">
                   ${year ? `<span class="text-zinc-400 text-[13px]">${year}</span>` : ''}
@@ -1590,7 +1735,7 @@
                   </a>
                 </div>
               </div>
-              <div class="mt-4">${html}</div>
+              <div class="mt-2">${html}</div>
 
             </div>
           </div>`;
@@ -1598,17 +1743,31 @@
 
         // Rich list actions (To Watch primary + Watched/Dislike)
         const addBtnContainer = document.createElement('div');
-        addBtnContainer.className = 'mt-3 flex gap-2';
+        addBtnContainer.className = 'mt-2 flex gap-1.5';
         const b1 = document.createElement('button');
-        b1.className = 'flex-1 text-xs px-3 py-1 rounded-2xl bg-emerald-700 text-white';
-        b1.textContent = '+ To Watch';
-        b1.onclick = (e) => { e.stopImmediatePropagation(); addToToWatch(m); b1.textContent = '✓'; setTimeout(()=>b1.textContent='+ To Watch',900); };
+        b1.className = 'flex-1 text-[10px] sm:text-xs px-2 py-1 rounded-2xl bg-emerald-700 text-white';
+        b1.textContent = '+ Watch';
+        b1.onclick = (e) => { e.stopImmediatePropagation(); addToToWatch(m); b1.textContent = '✓'; setTimeout(()=>b1.textContent='+ Watch',900); };
         const b2 = document.createElement('button');
-        b2.className = 'flex-1 text-xs px-3 py-1 rounded-2xl bg-zinc-800 border border-zinc-700';
-        b2.textContent = '⭐ Watched';
-        b2.onclick = (e) => { e.stopImmediatePropagation(); const r=prompt('Rate?','4'); addToWatched(m, r?parseInt(r):null); b2.textContent='✓'; };
+        b2.className = 'flex-1 text-[10px] sm:text-xs px-2 py-1 rounded-2xl bg-zinc-800 border border-zinc-700';
+        b2.textContent = 'Watched';
+        b2.onclick = (e) => { 
+          e.stopImmediatePropagation(); 
+          // Inline rating instead of prompt
+          b1.style.display='none'; b2.style.display='none'; b3.style.display='none';
+          const rateDiv = document.createElement('div');
+          rateDiv.className = 'flex gap-0.5 text-xs';
+          for(let r=1; r<=5; r++) {
+            const bb = document.createElement('button');
+            bb.textContent = r+'★';
+            bb.className = 'px-1 py-0.5 rounded bg-zinc-700 hover:bg-emerald-600 text-[10px]';
+            bb.onclick = () => { addToWatched(m, r); b2.textContent='✓'; rateDiv.remove(); };
+            rateDiv.appendChild(bb);
+          }
+          addBtnContainer.appendChild(rateDiv);
+        };
         const b3 = document.createElement('button');
-        b3.className = 'text-xs px-2 py-1 rounded-2xl border border-zinc-700 text-red-400';
+        b3.className = 'text-[10px] sm:text-xs px-1.5 py-1 rounded-2xl border border-zinc-700 text-red-400';
         b3.textContent = '👎';
         b3.onclick = (e) => { e.stopImmediatePropagation(); addToDisliked(m); b3.textContent='✓'; };
         addBtnContainer.appendChild(b1); addBtnContainer.appendChild(b2); addBtnContainer.appendChild(b3);
@@ -1671,18 +1830,30 @@
     async function refreshRecPool() {
       const grid = document.getElementById('recs-grid');
       const empty = document.getElementById('recs-empty');
-      if (grid) grid.innerHTML = `<div class="text-center py-6 text-zinc-400 text-sm col-span-full">Loading fresh horror pool from the void...</div>`;
+      if (grid) grid.innerHTML = `<div class="text-center py-6 text-zinc-400 text-sm col-span-full">Loading fresh pool (horror / thrillers / sci-fi / suspense)...</div>`;
       if (empty) empty.classList.add('hidden');
 
       try {
-        // Discover horror (genre 27), popular, US region, exclude watched via post filter
-        const url = `/api/tmdb/3/discover/movie?language=en-US&sort_by=popularity.desc&include_adult=false&watch_region=US&with_genres=27&page=1&vote_count.gte=50`;
-        const data = await apiFetch(url);
-        let results = (data.results || []).slice(0, 18);
-
-        // Enrich a bit (providers optional for recs; we can skip heavy calls for speed)
+        // Broader pool: horror (27) + thriller (53) + sci-fi (878) + mystery (9648 for suspense)
+        // Fetch per genre then union + dedupe (TMDB with_genres is AND; we want coverage across)
         const excluded = getExcludedKeys();
-        results = results.filter(r => !excluded.has(`${r.id}:movie`));
+        const genreIds = [27, 53, 878, 9648];
+        let raw = [];
+        await Promise.all(genreIds.map(async (g) => {
+          const url = `/api/tmdb/3/discover/movie?language=en-US&sort_by=popularity.desc&include_adult=false&watch_region=US&with_genres=${g}&page=1&vote_count.gte=40`;
+          try {
+            const data = await apiFetch(url);
+            raw = raw.concat((data.results || []).slice(0, 9));
+          } catch (_) {}
+        }));
+        // dedupe by id, prefer higher popularity
+        const seen = new Set();
+        let results = [];
+        const sorted = [...raw].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        for (const r of sorted) {
+          if (!seen.has(r.id)) { seen.add(r.id); results.push(r); }
+        }
+        results = results.filter(r => !excluded.has(`${r.id}:movie`)).slice(0, 20);
 
         // store minimal + genre_ids
         currentRecPool = results.map(r => ({
@@ -1737,23 +1908,36 @@
           <div class="flex gap-3">
             <img src="${poster}" class="w-[52px] h-[78px] rounded-xl object-cover border border-zinc-800" alt="">
             <div class="min-w-0 flex-1">
-              <div class="font-semibold text-sm leading-tight">${item.title}</div>
+              <div class="font-semibold text-sm leading-tight truncate">${item.title}</div>
               <div class="text-[11px] text-zinc-500">${year} · ★${(item.vote_average||0).toFixed(1)}</div>
               <div class="text-[10px] text-emerald-400/80 mt-0.5">taste boosted</div>
             </div>
           </div>
-          <div class="mt-3 flex gap-2">
-            <button class="flex-1 text-xs py-1.5 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white" data-act="towatch">+ To Watch</button>
-            <button class="flex-1 text-xs py-1.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700" data-act="watched">Mark Watched</button>
-            <button class="text-xs px-2 py-1.5 rounded-2xl border border-zinc-700 text-red-400" data-act="dislike">👎</button>
+          <div class="mt-2 flex gap-1">
+            <button class="flex-1 text-[10px] py-1 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white" data-act="towatch">+ Watch</button>
+            <button class="flex-1 text-[10px] py-1 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700" data-act="watched">Watched</button>
+            <button class="text-[10px] px-1.5 py-1 rounded-2xl border border-zinc-700 text-red-400" data-act="dislike">👎</button>
           </div>
         `;
         // wire actions
         card.querySelector('[data-act="towatch"]').onclick = () => { addToToWatch(item); card.remove(); };
         card.querySelector('[data-act="watched"]').onclick = () => {
-          const r = prompt('Your rating 1-5?', '4');
-          addToWatched(item, r ? parseInt(r,10) : null);
-          card.remove();
+          // Inline rating chooser, no front-and-center prompt
+          const actions = card.querySelector('.mt-2') || card.querySelector('[data-act="watched"]').parentElement;
+          if (actions) actions.innerHTML = '';
+          const rateDiv = document.createElement('div');
+          rateDiv.className = 'flex gap-0.5 text-xs mt-1';
+          for(let r=1; r<=5; r++) {
+            const b = document.createElement('button');
+            b.textContent = r + '★';
+            b.className = 'px-1 py-0.5 rounded bg-zinc-700 hover:bg-emerald-600 text-[10px]';
+            b.onclick = () => {
+              addToWatched(item, r);
+              card.remove();
+            };
+            rateDiv.appendChild(b);
+          }
+          card.appendChild(rateDiv);
         };
         card.querySelector('[data-act="dislike"]').onclick = () => { addToDisliked(item); card.remove(); };
         grid.appendChild(card);
@@ -1764,6 +1948,8 @@
 
     function saveChat() {
       localStorage.setItem('horror_roki_chat', JSON.stringify(chatHistory.slice(-20)));
+      // Light push for chat (debounced)
+      pushToServer();
     }
 
     function renderCuratorMessages() {
@@ -1817,7 +2003,7 @@
       lastGrounding = grounding;
 
       // messages for LLM (SYSTEM + context + user)
-      const sys = `You are The Curator, eternal keeper of horror cinema. Dry dark wit. Strict: never spoil, respect watched/disliked lists (never suggest them as unseen), ground facts only in provided metadata. For recs end with exactly: SUGGESTED: ["Exact Title"] . For batch: BATCH_RATE: [{"title":"..","suggested_rating":4,"reason":".."}]. Keep short.`;
+      const sys = `You are The Curator, eternal keeper of dark cinema — horror, thrillers, sci-fi, and suspense. Dry dark wit. Strict: never spoil, respect watched/disliked lists (never suggest them as unseen), ground facts only in provided metadata. For recs, suggest 3-5 fitting unseen titles from horror, thriller, sci-fi or suspense. End exactly with: SUGGESTED: ["Exact Title One", "Exact Title Two", ...] (up to 5). For batch: BATCH_RATE: [{"title":"..","suggested_rating":4,"reason":".."}]. Keep short.`;
       const fullUser = `USER CONTEXT:\n${userCtx}\n\nGROUNDING METADATA:\n${JSON.stringify(grounding)}\n\nUSER: ${text}`;
 
       const payload = {
@@ -1826,7 +2012,7 @@
           {role: 'system', content: sys},
           {role: 'user', content: fullUser}
         ],
-        max_tokens: llmConfig.max_response_tokens || 900,
+        max_tokens: llmConfig.max_response_tokens || 1100,
         temperature: 0.85,
         stream: true
       };
@@ -1884,7 +2070,7 @@
         saveChat();
 
         // parse markers and render special UI (SUGGESTED cards + BATCH)
-        parseAndRenderCuratorExtras(full, assistantDiv);
+        await parseAndRenderCuratorExtras(full, assistantDiv);
 
         if (status) status.textContent = 'Grounded • streaming via Worker • history kept until explicit clear';
 
@@ -1900,18 +2086,42 @@
       }
     }
 
-    function parseAndRenderCuratorExtras(fullText, parentDiv) {
+    async function parseAndRenderCuratorExtras(fullText, parentDiv) {
       curatorPicks = [];
       // SUGGESTED: ["Title One", "Title Two"]
       const sugMatch = fullText.match(/SUGGESTED:\s*\[([^\]]+)\]/i);
       if (sugMatch) {
         try {
-          // crude parse titles
           const titlesStr = sugMatch[1];
           const titles = titlesStr.split(',').map(s => s.trim().replace(/^"|"$/g,'').replace(/^'|'$/g,''));
-          titles.forEach(t => {
-            if (t.length > 1) curatorPicks.push({title: t, type: 'suggested'});
-          });
+          // Enrich with posters for visual appeal (local first, then live TMDB search)
+          const enrichedSuggested = await Promise.all(titles.map(async (t) => {
+            if (!t || t.length < 2) return null;
+            let poster_path = null;
+            let id = Date.now();
+            // Try local data first (rec pool, lists)
+            let local = (currentRecPool || []).find(x => x.title && x.title.toLowerCase() === t.toLowerCase()) ||
+                        (toWatchList || []).find(x => x.title && x.title.toLowerCase() === t.toLowerCase()) ||
+                        (watchedList || []).find(x => x.title && x.title.toLowerCase() === t.toLowerCase()) ||
+                        (dislikedList || []).find(x => x.title && x.title.toLowerCase() === t.toLowerCase());
+            if (local) {
+              poster_path = local.poster_path || null;
+              id = local.id || id;
+            }
+            if (!poster_path) {
+              // Live search for poster thumbnail
+              try {
+                const search = await apiFetch(`/api/tmdb/3/search/movie?query=${encodeURIComponent(t)}&page=1`);
+                if (search.results && search.results.length > 0) {
+                  const r = search.results[0];
+                  poster_path = r.poster_path;
+                  id = r.id;
+                }
+              } catch (e) {}
+            }
+            return {title: t, type: 'suggested', poster_path, id };
+          }));
+          enrichedSuggested.filter(Boolean).forEach(item => curatorPicks.push(item));
         } catch(e){}
       }
       // BATCH_RATE: [ {title, suggested_rating, reason} ... ]
@@ -1944,10 +2154,17 @@
             <button class="text-[11px] px-2 py-0.5 rounded-xl bg-emerald-700 text-white" data-apply-batch>Apply</button>
           `;
         } else {
+          const posterHtml = p.poster_path 
+            ? `<img src="https://image.tmdb.org/t/p/w92${p.poster_path}" class="w-10 h-14 rounded object-cover flex-shrink-0 border border-zinc-700" alt="">`
+            : `<div class="w-10 h-14 bg-zinc-800 rounded flex-shrink-0 flex items-center justify-center text-[10px] text-zinc-500">📽️</div>`;
           row.innerHTML = `
-            <span class="flex-1 truncate">${p.title}</span>
-            <button class="text-[11px] px-2 py-0.5 rounded-xl bg-emerald-700 text-white" data-add-towatch>+ To Watch</button>
-            <button class="text-[11px] px-2 py-0.5 rounded-xl border border-zinc-700" data-mark-watched>Mark Watched</button>
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              ${posterHtml}
+              <span class="truncate">${p.title}</span>
+            </div>
+            <button class="text-[10px] px-1.5 py-0.5 rounded-xl bg-emerald-700 text-white" data-add-towatch>+W</button>
+            <button class="text-[10px] px-1.5 py-0.5 rounded-xl border border-zinc-700" data-mark-watched>Rate</button>
+            <button class="text-[10px] px-1 py-0.5 rounded-xl border border-zinc-700 text-red-400" data-dislike>👎</button>
           `;
         }
         wrap.appendChild(row);
@@ -1956,22 +2173,45 @@
         setTimeout(() => {
           const addTw = row.querySelector('[data-add-towatch]');
           if (addTw) addTw.onclick = () => {
-            // try to find full item from pool or search live
-            const found = currentRecPool.find(x => x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: Date.now()+i };
+            const found = currentRecPool.find(x => x.title && x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: p.id || Date.now()+i, poster_path: p.poster_path };
             addToToWatch(found);
             row.style.opacity = '0.4';
           };
           const markW = row.querySelector('[data-mark-watched]');
           if (markW) markW.onclick = () => {
-            const found = currentRecPool.find(x => x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: Date.now()+i };
-            const r = prompt('Rate?', '4'); addToWatched(found, r?parseInt(r):null); row.style.opacity='0.4';
+            const found = currentRecPool.find(x => x.title && x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: p.id || Date.now()+i, poster_path: p.poster_path };
+            // Inline rating chooser – no jarring browser prompt dialog that jumps front-and-center
+            row.querySelectorAll('button').forEach(b => b.style.display = 'none');
+            const rateDiv = document.createElement('div');
+            rateDiv.className = 'flex gap-0.5 text-xs ml-1';
+            for(let r=1; r<=5; r++) {
+              const b = document.createElement('button');
+              b.textContent = r + '★';
+              b.className = 'px-1 py-0.5 rounded bg-zinc-700 hover:bg-emerald-600 text-[10px]';
+              b.onclick = (ev) => {
+                ev.stopImmediatePropagation();
+                addToWatched(found, r);
+                row.style.opacity = '0.4';
+                rateDiv.remove();
+              };
+              rateDiv.appendChild(b);
+            }
+            row.appendChild(rateDiv);
+          };
+          const disBtn = row.querySelector('[data-dislike]');
+          if (disBtn) disBtn.onclick = () => {
+            const found = currentRecPool.find(x => x.title && x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: p.id || Date.now()+i, poster_path: p.poster_path };
+            addToDisliked(found);
+            row.style.opacity = '0.3';
+            // also refresh main recs grid so it disappears from recommendations
+            if (currentRecPool.length) recomputeRecommendations();
           };
           const chk = row.querySelector('input[type="checkbox"]');
           const apply = row.querySelector('[data-apply-batch]');
           if (apply && chk) {
             apply.onclick = () => {
               if (!chk.checked) return;
-              const found = currentRecPool.find(x => x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: Date.now()+i };
+              const found = currentRecPool.find(x => x.title && x.title.toLowerCase() === p.title.toLowerCase()) || {title: p.title, id: p.id || Date.now()+i, poster_path: p.poster_path };
               addToWatched(found, p.rating || 4);
               row.style.opacity = '0.3';
             };
@@ -1995,7 +2235,7 @@
       document.querySelectorAll('.suggested-card').forEach(el => el.remove());
     }
 
-    // Settings (LLM config + backup + import) - simple modal using existing style
+// Settings (LLM config + backup + import) - simple modal using existing style
     function showSettings() {
       const modal = document.getElementById('detail-modal');
       if (!modal) { alert('Settings: use localStorage keys horror_roki_* or edit llmConfig in console for now. Full panel coming.'); return; }
@@ -2008,8 +2248,11 @@
       const avail = document.getElementById('modal-availability');
       const btn = document.getElementById('modal-add-button');
       if (titleEl) titleEl.textContent = 'Settings & Backup';
-      if (meta) meta.textContent = 'All data stays in this browser. Curator via /api/llm Worker.';
+      if (meta) meta.textContent = 'Backup, import & sync options.';
       if (genresEl) genresEl.innerHTML = '';
+      // Hide the "Where to watch" header (not relevant in Settings)
+      const whereWrap = document.querySelector('#detail-modal .mb-2');
+      if (whereWrap) whereWrap.style.display = 'none';
       if (avail) avail.innerHTML = `
         <div class="text-sm space-y-3">
           <div>
@@ -2018,9 +2261,17 @@
           </div>
           <div class="mt-3">
             <div class="text-xs text-zinc-500 mb-1">API Endpoint Base (for Worker)</div>
-            <input id="set-api-base" value="${apiBase || ''}" placeholder="Leave empty for /api (Cloudflare route) or paste https://your-worker.workers.dev" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm w-full">
-            <div class="text-[10px] text-zinc-500 mt-0.5">For production (live site on Pages): leave this field EMPTY. The /api calls will automatically route to your Worker if you set a Route in the Worker dashboard (e.g. your-project.pages.dev/api/* ).<br>For local testing only: paste the Worker URL.</div>
+            <input id="set-api-base" value="${apiBase || ''}" placeholder="Leave empty for normal use" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm w-full">
           </div>
+
+          <div class="mt-4 pt-3 border-t border-zinc-800">
+            <div class="flex gap-2">
+              <button id="server-pull" class="flex-1 px-3 py-1.5 rounded-2xl bg-emerald-700 text-white text-sm">Pull from Server</button>
+              <button id="server-push" class="flex-1 px-3 py-1.5 rounded-2xl bg-zinc-800 border border-zinc-700 text-sm">Push to Server</button>
+            </div>
+            <div id="server-sync-status" class="text-[10px] text-zinc-500 mt-1"></div>
+          </div>
+
           <div class="flex gap-2 mt-3">
             <button id="save-llm" class="flex-1 px-3 py-1.5 rounded-2xl bg-indigo-600 text-white text-sm">Save Configs</button>
             <button id="do-backup" class="flex-1 px-3 py-1.5 rounded-2xl bg-zinc-800 border border-zinc-700 text-sm">Download Full Backup JSON</button>
@@ -2030,10 +2281,24 @@
             <input type="file" id="import-file" accept=".json,.csv" class="text-xs">
             <button id="do-import" class="ml-2 px-3 py-1 rounded-2xl bg-zinc-700 text-sm">Import</button>
           </div>
-          <div class="text-[10px] text-zinc-500 mt-2">Clear all data: localStorage.clear() + reload (dev only). For "TMDB_TOKEN secret is not configured": go to your Worker in Cloudflare dashboard → Settings → Variables and Secrets → add secret named exactly TMDB_TOKEN with your key. Then hard refresh here.</div>
         </div>
       `;
-      if (btn) { btn.textContent = 'Close'; btn.onclick = () => { modal.classList.add('hidden'); }; }
+      // Hide the entire bottom action row (green + black Close buttons) in Settings
+      const bottomRow = document.querySelector('#detail-modal .flex.gap-2');
+      if (bottomRow) bottomRow.style.display = 'none';
+      // Extra safety: hide any button with exact "Close" text
+      document.querySelectorAll('#detail-modal button').forEach(b => {
+        if (b.textContent.toLowerCase().trim() === 'close') {
+          b.style.display = 'none';
+        }
+      });
+      // Final safety: hide the footer actions div
+      const footerActions = document.querySelector('#detail-modal .p-4.sm\\:p-6 > div:last-child');
+      if (footerActions) footerActions.style.display = 'none';
+      if (btn) {
+        btn.textContent = 'Close';
+        btn.onclick = () => { modal.classList.add('hidden'); };
+      }
 
       // wire after
       setTimeout(() => {
@@ -2057,6 +2322,25 @@
         };
         const db = document.getElementById('do-backup');
         if (db) db.onclick = downloadFullBackup;
+
+        // Wire server sync buttons (new cross-device feature)
+        const pullBtn = document.getElementById('server-pull');
+        const pushBtn = document.getElementById('server-push');
+        const statusEl = document.getElementById('server-sync-status');
+
+        if (pullBtn) pullBtn.onclick = async () => {
+          if (statusEl) statusEl.textContent = 'Pulling from server...';
+          const data = await syncFromServer();
+          if (statusEl) statusEl.textContent = data ? 'Pulled latest from server KV ✓' : 'No server data or KV not bound yet.';
+          setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2200);
+        };
+        if (pushBtn) pushBtn.onclick = async () => {
+          if (statusEl) statusEl.textContent = 'Pushing to server...';
+          await pushToServer(true);
+          if (statusEl) statusEl.textContent = 'Pushed your current lists to server KV ✓';
+          setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2200);
+        };
+
         const impBtn = document.getElementById('do-import');
         const f = document.getElementById('import-file');
         if (impBtn && f) impBtn.onclick = () => {
@@ -2101,7 +2385,6 @@
         };
       }, 30);
     }
-
     function downloadFullBackup() {
       const backup = {
         watched: watchedList,
@@ -2122,8 +2405,6 @@
 
     // Boot (extended for new library + recs + curator)
     function boot() {
-      loadPreferences();
-
       // Initialize Discover UI
       renderGenreChips();
       renderRatingChips();
@@ -2152,6 +2433,12 @@
 
       // init top personal tabs (default to To Watch)
       switchPersonalTab('towatch');
+
+      // Pull latest from server KV (if configured). This is what makes phone + desktop share the same watched/disliked lists.
+      // Non-blocking. Falls back silently to whatever is in localStorage on this device.
+      setTimeout(() => {
+        syncFromServer().catch(() => {});
+      }, 650);
 
       // Hide the beginner help note once password is set
       const helpNote = document.getElementById('first-time-help');
