@@ -42,8 +42,8 @@ export default {
 
     // === 2. Generic TMDB Proxy ===
     if (pathname.startsWith('/api/tmdb/')) {
-      const tmdbPath = pathname.replace('/api/tmdb', ''); // e.g. /movie/123/recommendations
-      const tmdbUrl = new URL(`https://api.themoviedb.org/3${tmdbPath}${url.search}`);
+      const tmdbPath = pathname.replace('/api/tmdb', ''); // e.g. /3/discover/movie?...
+      const tmdbUrl = new URL(`https://api.themoviedb.org${tmdbPath}${url.search}`);
 
       const headers = {
         'Accept': 'application/json',
@@ -51,7 +51,12 @@ export default {
 
       // Add TMDB authentication
       if (!env.TMDB_TOKEN) {
-        return jsonError('TMDB_TOKEN secret is not configured', 500);
+        const available = Object.keys(env).filter(k => !k.startsWith('CF_') && !k.startsWith('__'));
+        return jsonResponse({ 
+          error: 'TMDB_TOKEN secret is not configured', 
+          availableSecrets: available,
+          note: 'The secret must be named exactly "TMDB_TOKEN" (case sensitive) in the dashboard for THIS Worker. If you see it listed but the error persists, redeploy the Worker code.'
+        }, 500);
       }
 
       if (env.TMDB_TOKEN.startsWith('eyJ')) {

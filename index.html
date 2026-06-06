@@ -237,13 +237,29 @@
       padding: 8px;
       margin-top: 6px;
     }
+
+    .personal-tab {
+      padding: 6px 12px;
+      font-size: 13px;
+      border-bottom: 2px solid transparent;
+      color: #a1a1aa;
+      white-space: nowrap;
+    }
+    .personal-tab.active {
+      color: #fff;
+      border-bottom-color: #b91c1c;
+      font-weight: 500;
+    }
+    .personal-pane {
+      min-height: 120px;
+    }
   </style>
 </head>
 <body class="bg-zinc-950 text-zinc-200 no-pull-refresh">
   <div class="max-w-7xl mx-auto px-4 sm:px-5 pt-4 sm:pt-5 pb-8 sm:pb-10">
 
     <!-- Header -->
-    <div class="mb-6 sm:mb-8 flex items-end justify-between">
+    <div class="mb-3 flex items-end justify-between">
       <div>
         <h1 class="text-5xl font-semibold tracking-[-2.5px] text-white">Horror Roki</h1>
         <p class="text-zinc-400 text-[14px] mt-1 tracking-tight">Find your next <span class="text-red-400/90">nightmare</span>.</p>
@@ -267,14 +283,53 @@
       </div>
     </div>
 
-    <!-- Compact live stats (updates with library) -->
-    <div class="mb-3 px-1 flex gap-4 text-xs text-zinc-400">
-      <span id="stat-watched">Watched: <span class="font-semibold text-zinc-200">0</span></span>
-      <span id="stat-towatch">To Watch: <span class="font-semibold text-zinc-200">0</span></span>
-      <span>Personalized via your library + Curator</span>
+    <!-- Top Personal Tabs (To Watch / Watched / Disliked / Curator moved to top as requested) -->
+    <div class="mb-4">
+      <div class="flex overflow-x-auto border-b border-zinc-700 text-sm">
+        <button onclick="switchPersonalTab('towatch')" id="tab-towatch" class="personal-tab active">To Watch <span id="tab-towatch-count" class="text-[10px] text-zinc-400">(0)</span></button>
+        <button onclick="switchPersonalTab('watched')" id="tab-watched" class="personal-tab">Watched <span id="tab-watched-count" class="text-[10px] text-zinc-400">(0)</span></button>
+        <button onclick="switchPersonalTab('disliked')" id="tab-disliked" class="personal-tab">Disliked <span id="tab-disliked-count" class="text-[10px] text-zinc-400">(0)</span></button>
+        <button onclick="switchPersonalTab('curator')" id="tab-curator" class="personal-tab">👻 Curator</button>
+      </div>
+      <div class="mt-2">
+        <div id="pane-towatch" class="personal-pane">
+          <div class="flex justify-between mb-1 text-xs text-zinc-500">
+            <div>Upcoming nightmares</div>
+            <button onclick="pickRandomToWatch()" class="text-[10px] px-1.5 py-px bg-zinc-800 rounded">🎲 Random</button>
+          </div>
+          <div id="to-watch-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[140px] overflow-auto"></div>
+        </div>
+        <div id="pane-watched" class="personal-pane hidden">
+          <div class="text-xs text-zinc-500 mb-1">Watched library (drives recs)</div>
+          <div id="watched-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[140px] overflow-auto"></div>
+        </div>
+        <div id="pane-disliked" class="personal-pane hidden">
+          <div class="text-xs text-zinc-500 mb-1">Disliked (excluded from recs)</div>
+          <div id="disliked-content" class="space-y-1 text-sm border border-zinc-800 rounded p-1 max-h-[140px] overflow-auto"></div>
+        </div>
+        <div id="pane-curator" class="personal-pane hidden">
+          <div class="border border-zinc-800 rounded overflow-hidden">
+            <div class="flex items-center justify-between px-2 py-1 bg-zinc-900 text-xs">
+              <div class="flex items-center gap-1"><span class="curator-avatar" style="width:16px;height:16px;font-size:9px">👻</span> <span class="font-medium">The Curator</span></div>
+              <div class="flex gap-1">
+                <button onclick="clearCuratorPicks()" class="text-[9px] px-1 py-px border border-zinc-700 rounded">🧹</button>
+                <button onclick="clearCuratorChat()" class="text-[9px] px-1 py-px border border-zinc-700 rounded">🪦</button>
+              </div>
+            </div>
+            <div id="curator-messages" class="px-2 py-1 max-h-[110px] overflow-auto text-xs space-y-1 bg-[#111113]"></div>
+            <div class="p-1 border-t border-zinc-800 bg-zinc-950">
+              <div class="flex gap-1">
+                <input id="curator-input" type="text" placeholder="Ask Curator..." class="flex-1 bg-zinc-900 border border-zinc-700 text-xs rounded px-1.5 py-0.5 outline-none" onkeypress="if (event.key === 'Enter') sendToCurator()">
+                <button onclick="sendToCurator()" class="px-2 py-0.5 bg-red-900 text-white text-xs rounded">Send</button>
+              </div>
+              <div id="curator-status" class="text-[9px] text-zinc-500 mt-0.5">Grounded • persistent until clear</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Prominent My Services -->
+    <!-- Prominent My Services (kept compact) -->
     <div class="mb-6">
       <div class="flex items-center justify-between mb-2 px-1">
         <div>
@@ -283,14 +338,14 @@
         </div>
         <button onclick="resetMyServices()" class="text-xs text-zinc-400 hover:text-zinc-300">Reset</button>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-3xl text-sm cursor-pointer select-none"><input type="checkbox" id="svc-netflix" onchange="savePreferences()" class="accent-white" checked> Netflix</label>
-        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-3xl text-sm cursor-pointer select-none"><input type="checkbox" id="svc-hulu" onchange="savePreferences()" class="accent-white" checked> Hulu</label>
-        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-3xl text-sm cursor-pointer select-none"><input type="checkbox" id="svc-max" onchange="savePreferences()" class="accent-white" checked> Max</label>
-        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-3xl text-sm cursor-pointer select-none"><input type="checkbox" id="svc-prime" onchange="savePreferences()" class="accent-white" checked> Prime Video</label>
-        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-3xl text-sm cursor-pointer select-none"><input type="checkbox" id="svc-peacock" onchange="savePreferences()" class="accent-white" checked> Peacock</label>
-        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-3xl text-sm cursor-pointer select-none"><input type="checkbox" id="svc-apple" onchange="savePreferences()" class="accent-white" checked> Apple TV+</label>
-        <label class="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 border border-zinc-700 rounded-3xl text-sm cursor-pointer select-none"><input type="checkbox" id="svc-paramount" onchange="savePreferences()" class="accent-white" checked> Paramount+</label>
+      <div class="flex flex-wrap gap-1">
+        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-netflix" onchange="savePreferences()" class="accent-white" checked> Netflix</label>
+        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-hulu" onchange="savePreferences()" class="accent-white" checked> Hulu</label>
+        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-max" onchange="savePreferences()" class="accent-white" checked> Max</label>
+        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-prime" onchange="savePreferences()" class="accent-white" checked> Prime</label>
+        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-peacock" onchange="savePreferences()" class="accent-white" checked> Peacock</label>
+        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-apple" onchange="savePreferences()" class="accent-white" checked> Apple+</label>
+        <label class="flex items-center gap-1 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-2xl text-xs cursor-pointer select-none"><input type="checkbox" id="svc-paramount" onchange="savePreferences()" class="accent-white" checked> Paramount</label>
       </div>
     </div>
 
@@ -319,7 +374,7 @@
     </div>
 
     <!-- Search -->
-    <div class="mb-5">
+    <div class="mb-3">
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
         <div class="flex gap-2 items-center mb-3">
           <div class="relative flex-1">
@@ -349,7 +404,7 @@
     </div>
 
     <!-- Discover by genre -->
-    <div class="mb-5">
+    <div class="mb-3">
       <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
         <div class="flex items-center justify-between mb-3 px-1">
           <div class="text-[13px] font-medium text-zinc-400">Discover horror — filter by genre, rating &amp; decade</div>
@@ -408,7 +463,7 @@
     <div id="active-filters" class="hidden mb-3 flex flex-wrap gap-2 px-1"></div>
 
     <!-- Results -->
-    <div id="results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
+    <div id="results" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2"></div>
 
     <!-- Load more for Discover -->
     <div id="load-more-container" class="hidden text-center mt-4">
@@ -438,99 +493,15 @@
         <!-- Populated by JS: All + Slow burn, Psychological, Supernatural, Folk, Gory -->
       </div>
 
-      <div id="recs-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div id="recs-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
         <!-- Populated by renderRecommendations() -->
       </div>
-      <div id="recs-empty" class="hidden text-center py-6 text-zinc-500 text-sm">
-        No recommendations yet. Add some movies to Your Library (Watched) or hit Refresh Pool.
-      </div>
-      <div id="recs-stats" class="text-[10px] text-zinc-500 px-1 mt-1">Taste profile updates live from Watched (higher weight on 5★).</div>
-    </div>
-
-    <!-- Your Library (To Watch + Watched + Disliked - full lists from current setup, styled like existing My List) -->
-    <div class="space-y-3 mb-6">
-      <details id="library-to-watch" class="modern-card group" open>
-        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-list text-xl text-emerald-400"></i>
-            <div>
-              <div class="font-semibold">To Watch <span id="to-watch-count" class="text-xs font-normal text-zinc-500">(0)</span></div>
-              <div class="text-xs text-zinc-500">Your upcoming nightmares • batch rate from here or Curator</div>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="event.stopImmediatePropagation(); pickRandomToWatch()" class="text-[10px] px-2 py-0.5 rounded-2xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800">🎲 Random</button>
-            <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
-          </div>
-        </summary>
-        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
-          <div id="to-watch-content" class="space-y-2 text-sm"></div>
-          <div class="mt-3 text-[11px] text-zinc-500">Items you add here can be rated in batch via The Curator or manually.</div>
-        </div>
-      </details>
-
-      <details id="library-watched" class="modern-card group">
-        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-check-double text-xl text-zinc-300"></i>
-            <div>
-              <div class="font-semibold">Watched <span id="watched-count" class="text-xs font-normal text-zinc-500">(0)</span></div>
-              <div class="text-xs text-zinc-500">Your library — powers personalized recs &amp; taste profile</div>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
-        </summary>
-        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
-          <div id="watched-content" class="space-y-2 text-sm"></div>
-        </div>
-      </details>
-
-      <details id="library-disliked" class="modern-card group">
-        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
-          <div class="flex items-center gap-3">
-            <i class="fa-solid fa-thumbs-down text-xl text-red-400/70"></i>
-            <div>
-              <div class="font-semibold">Disliked <span id="disliked-count" class="text-xs font-normal text-zinc-500">(0)</span></div>
-              <div class="text-xs text-zinc-500">Never recommend these again</div>
-            </div>
-          </div>
-          <i class="fa-solid fa-chevron-down transition-transform group-open:rotate-180 text-zinc-400"></i>
-        </summary>
-        <div class="px-5 pb-5 border-t border-zinc-800 pt-4">
-          <div id="disliked-content" class="space-y-2 text-sm"></div>
-        </div>
-      </details>
-    </div>
-
-    <!-- The Curator chat (full port of 👻 Chat with The Curator: streaming, grounding, SUGGESTED cards, BATCH_RATE, explicit clears, live TMDB) -->
-    <div class="mb-6">
-      <div class="modern-card">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
-          <div class="flex items-center gap-3">
-            <span class="curator-avatar">👻</span>
-            <div>
-              <div class="font-semibold">The Curator</div>
-              <div class="text-[11px] text-zinc-500">Eternal keeper of horror cinema • grounded in your lists</div>
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="clearCuratorPicks()" class="text-[10px] px-2.5 py-1 rounded-2xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800">🧹 Clear picks</button>
-            <button onclick="clearCuratorChat()" class="text-[10px] px-2.5 py-1 rounded-2xl border border-zinc-700 text-zinc-400 hover:bg-zinc-800">🪦 Clear chat</button>
-          </div>
-        </div>
-        <div id="curator-messages" class="px-4 py-4 max-h-[320px] overflow-auto text-sm space-y-1 bg-[#111113] rounded-b-3xl"></div>
-        <div class="p-3 border-t border-zinc-800 bg-zinc-950 rounded-b-3xl">
-          <div class="flex gap-2">
-            <input id="curator-input" type="text" placeholder="Whisper to The Curator... (e.g. slow-burn folk horror from my list, no spoilers)"
-                   class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-zinc-400 text-sm rounded-3xl px-4 py-2 outline-none"
-                   onkeypress="if (event.key === 'Enter') sendToCurator()">
-            <button onclick="sendToCurator()" 
-                    class="px-4 py-2 bg-red-900 hover:bg-red-800 active:bg-red-950 text-white text-sm font-medium rounded-3xl">Send</button>
-          </div>
-          <div id="curator-status" class="text-[10px] text-zinc-500 mt-1.5 px-1">Grounded • streaming via Worker • history kept until explicit clear</div>
-        </div>
+      <div id="recs-empty" class="hidden text-center py-4 text-zinc-500 text-sm">
+        Add movies to Watched for personalized recs.
       </div>
     </div>
+
+
 
     <!-- Detail Modal -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
@@ -643,13 +614,19 @@
     }
 
     // === Password for Cloudflare Worker (Basic Auth) ===
-    // The Worker requires a shared password on all /api/tmdb calls.
+    // The Worker requires a shared password on all /api/tmdb and /api/llm calls.
     // We store it in localStorage (per-browser). Username is ignored by the Worker.
     let apiPassword = localStorage.getItem('brous_password') || '';
 
+    // Optional: Custom API base for direct Worker access (useful for local testing or tunnels).
+    // Example: 'https://your-worker.your-account.workers.dev'
+    // Leave empty (default) to use relative /api paths (works when Worker route is attached to your Pages domain).
+    let apiBase = localStorage.getItem('brous_api_base') || '';
+    console.log('[Horror Roki] Current apiBase at load:', apiBase || '(relative)');
+
     function getAuthHeaders() {
       if (!apiPassword) {
-        apiPassword = prompt('Enter the shared Brous password:') || '';
+        apiPassword = prompt('Enter the shared password for the Worker (same as your PASSWORD secret):') || '';
         if (apiPassword) {
           localStorage.setItem('brous_password', apiPassword);
         }
@@ -663,7 +640,15 @@
 
     async function apiFetch(path) {
       const headers = getAuthHeaders();
-      const res = await fetch(path, { headers });
+      let url = path;
+      if (apiBase) {
+        // Support absolute Worker URL for local testing / tunnels / direct calls
+        const base = apiBase.replace(/\/+$/, '');
+        const p = path.startsWith('/') ? path : '/' + path;
+        url = base + p;
+      }
+      const res = await fetch(url, { headers });
+      console.log('[Horror Roki] apiFetch to:', url, 'status will be checked next');
       if (res.status === 401) {
         // Bad or missing password
         localStorage.removeItem('brous_password');
@@ -673,8 +658,27 @@
         throw err;
       }
       if (!res.ok) {
-        const err = new Error('API error ' + res.status);
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('text/html')) {
+          // Likely hit Pages static 404 instead of Worker route
+          const err = new Error('API call failed: received HTML instead of JSON. This usually means the Worker Route is not set up for this domain (or wrong domain). Check Cloudflare Worker Routes for your Pages URL + /api/*');
+          err.status = res.status;
+          err.isRouteError = true;
+          throw err;
+        }
+        let msg = 'API error ' + res.status;
+        let errData = null;
+        try {
+          errData = await res.json();
+          if (errData && errData.error) {
+            msg = errData.error;
+          } else if (errData && errData.status_message) {
+            msg = errData.status_message;
+          }
+        } catch (_) {}
+        const err = new Error(msg);
         err.status = res.status;
+        err.details = errData;
         throw err;
       }
       return res.json();
@@ -899,10 +903,23 @@
 
       } catch (e) {
         if (reset) {
-          const msg = (e.status === 401 || e.message.includes('Unauthorized') || e.message.includes('password'))
-            ? 'Password required or incorrect. Click the 🔐 Pass button above to set it.'
-            : 'Error loading results. Check password (🔐 Pass button) or connection.';
-          container.innerHTML = `<div class="text-center py-6 text-red-400">${msg}</div>`;
+          console.error('[Horror Roki] Discover failed:', e, 'URL attempted:', url);
+          let hint = 'Check password (🔐 Pass button) or connection.';
+          if (apiBase) hint += ` (Using custom base: ${apiBase})`;
+          let displayMsg;
+          if (e.status === 401 || e.message.includes('Unauthorized') || e.message.includes('password')) {
+            displayMsg = 'Password required or incorrect. Click the 🔐 Pass button above to set it (or use ⚙︎ Settings to set API Endpoint Base if running locally).';
+          } else if (e.details && e.details.error) {
+            displayMsg = e.details.error;
+            if (e.details.availableSecrets) {
+              displayMsg += ' | Available matching secrets: ' + JSON.stringify(e.details.availableSecrets);
+            }
+          } else if (e.message) {
+            displayMsg = e.message;
+          } else {
+            displayMsg = `Error loading results. ${hint} (If using local server: open ⚙︎ Settings and set "API Endpoint Base" to your Worker URL like https://your-worker.workers.dev , then set password. See browser Console for details.)`;
+          }
+          container.innerHTML = `<div class="text-center py-6 text-red-400">${displayMsg}</div>`;
         }
         document.getElementById('load-more-container').classList.add('hidden');
       }
@@ -1073,17 +1090,13 @@
     }
 
     function updateLibraryCounts() {
-      const tw = document.getElementById('to-watch-count');
-      if (tw) tw.textContent = `(${toWatchList.length})`;
-      const w = document.getElementById('watched-count');
-      if (w) w.textContent = `(${watchedList.length})`;
-      const d = document.getElementById('disliked-count');
-      if (d) d.textContent = `(${dislikedList.length})`;
-      // top compact stats
-      const sw = document.getElementById('stat-watched');
-      if (sw) sw.innerHTML = `Watched: <span class="font-semibold text-zinc-200">${watchedList.length}</span>`;
-      const st = document.getElementById('stat-towatch');
-      if (st) st.innerHTML = `To Watch: <span class="font-semibold text-zinc-200">${toWatchList.length}</span>`;
+      // update top tabs counts (personal tabs at top)
+      const ttw = document.getElementById('tab-towatch-count');
+      if (ttw) ttw.textContent = `(${toWatchList.length})`;
+      const twa = document.getElementById('tab-watched-count');
+      if (twa) twa.textContent = `(${watchedList.length})`;
+      const td = document.getElementById('tab-disliked-count');
+      if (td) td.textContent = `(${dislikedList.length})`;
     }
 
     function addToToWatch(item) {
@@ -1255,6 +1268,16 @@
       renderWatched();
       renderDisliked();
       try { renderWatchlist(); } catch(e){}
+    }
+
+    // Simple tabs for top personal (To Watch etc moved to top)
+    function switchPersonalTab(tab) {
+      document.querySelectorAll('.personal-pane').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.personal-tab').forEach(b => b.classList.remove('active'));
+      const pane = document.getElementById('pane-' + tab);
+      if (pane) pane.classList.remove('hidden');
+      const btn = document.getElementById('tab-' + tab);
+      if (btn) btn.classList.add('active');
     }
 
     // ===================== MODAL =====================
@@ -1475,10 +1498,21 @@
         const activeFilters = document.getElementById('active-filters');
         if (activeFilters) activeFilters.classList.add('hidden');
       } catch (e) {
-        const msg = (e.status === 401 || e.message.includes('Unauthorized') || e.message.includes('password'))
-          ? 'Password required or incorrect. Click the 🔐 Pass button above to set it.'
-          : 'Error fetching data. Check password (🔐 Pass button) or connection.';
-        container.innerHTML = `<div class="text-center py-6 text-red-400">${msg}</div>`;
+        console.error('[Horror Roki] Search failed:', e);
+        let displayMsg;
+        if (e.status === 401 || e.message.includes('Unauthorized') || e.message.includes('password')) {
+          displayMsg = 'Password required or incorrect. Click the 🔐 Pass button above to set it (or use ⚙︎ Settings to set API Endpoint Base if running locally).';
+        } else if (e.details && e.details.error) {
+          displayMsg = e.details.error;
+          if (e.details.availableSecrets) {
+            displayMsg += ' | Available matching secrets: ' + JSON.stringify(e.details.availableSecrets);
+          }
+        } else if (e.message) {
+          displayMsg = e.message;
+        } else {
+          displayMsg = 'Error fetching data. Check password (🔐 Pass button) or connection. (If using local server: open ⚙︎ Settings and set "API Endpoint Base" to your Worker URL like https://your-worker.workers.dev , then set password. See browser Console for details.)';
+        }
+        container.innerHTML = `<div class="text-center py-6 text-red-400">${displayMsg}</div>`;
       }
     }
 
@@ -1682,7 +1716,13 @@
 
         recomputeRecommendations();
       } catch (e) {
-        if (grid) grid.innerHTML = `<div class="text-center py-6 text-red-400 text-sm col-span-full">Failed to load pool. Check 🔐 password / connection.</div>`;
+        console.error('[Horror Roki] Refresh pool failed:', e, 'base was:', apiBase);
+        let poolMsg = 'Failed to load pool. Check 🔐 password / connection.';
+        if (e.details && e.details.error) {
+          poolMsg = e.details.error;
+          if (e.details.availableSecrets) poolMsg += ' | Secrets: ' + JSON.stringify(e.details.availableSecrets);
+        } else if (e.message && e.message.length < 100) poolMsg = e.message;
+        if (grid) grid.innerHTML = `<div class="text-center py-6 text-red-400 text-sm col-span-full">${poolMsg} (base: ${apiBase || 'relative'}) See browser Console (F12) for details.</div>`;
       }
     }
 
@@ -1814,11 +1854,17 @@
       };
 
       try {
-        const res = await fetch('/api/llm', {
+        let llmUrl = '/api/llm';
+        if (apiBase) {
+          const base = apiBase.replace(/\/+$/, '');
+          llmUrl = base + '/api/llm';
+        }
+        const res = await fetch(llmUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify(payload)
         });
+        console.log('[Horror Roki] Curator LLM call to:', llmUrl);
         if (!res.ok) throw new Error('LLM proxy error ' + res.status + ' (check XAI_TOKEN in Worker + password)');
 
         // Stream parse (OpenAI SSE style)
@@ -1992,16 +2038,21 @@
             <div class="text-xs text-zinc-500 mb-1">LLM Model (via Worker XAI_TOKEN)</div>
             <input id="set-model" value="${llmConfig.model || 'grok-4.3'}" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm w-full">
           </div>
-          <div class="flex gap-2">
-            <button id="save-llm" class="flex-1 px-3 py-1.5 rounded-2xl bg-indigo-600 text-white text-sm">Save LLM Config</button>
+          <div class="mt-3">
+            <div class="text-xs text-zinc-500 mb-1">API Endpoint Base (for Worker)</div>
+            <input id="set-api-base" value="${apiBase || ''}" placeholder="Leave empty for /api (Cloudflare route) or paste https://your-worker.workers.dev" class="bg-zinc-950 border border-zinc-700 rounded px-2 py-1 text-sm w-full">
+            <div class="text-[10px] text-zinc-500 mt-0.5">For production (live site on Pages): leave this field EMPTY. The /api calls will automatically route to your Worker if you set a Route in the Worker dashboard (e.g. your-project.pages.dev/api/* ).<br>For local testing only: paste the Worker URL.</div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button id="save-llm" class="flex-1 px-3 py-1.5 rounded-2xl bg-indigo-600 text-white text-sm">Save Configs</button>
             <button id="do-backup" class="flex-1 px-3 py-1.5 rounded-2xl bg-zinc-800 border border-zinc-700 text-sm">Download Full Backup JSON</button>
           </div>
-          <div>
-            <div class="text-xs text-zinc-500 mb-1">Import Letterboxd / full backup JSON</div>
+          <div class="mt-3">
+            <div class="text-xs text-zinc-500 mb-1">Import Letterboxd / full backup JSON or CSV</div>
             <input type="file" id="import-file" accept=".json,.csv" class="text-xs">
             <button id="do-import" class="ml-2 px-3 py-1 rounded-2xl bg-zinc-700 text-sm">Import</button>
           </div>
-          <div class="text-[10px] text-zinc-500">Clear all: localStorage.clear() + reload (dev only).</div>
+          <div class="text-[10px] text-zinc-500 mt-2">Clear all data: localStorage.clear() + reload (dev only). For "TMDB_TOKEN secret is not configured": go to your Worker in Cloudflare dashboard → Settings → Variables and Secrets → add secret named exactly TMDB_TOKEN with your key. Then hard refresh here.</div>
         </div>
       `;
       if (btn) { btn.textContent = 'Close'; btn.onclick = () => { modal.classList.add('hidden'); }; }
@@ -2013,7 +2064,18 @@
           const m = document.getElementById('set-model');
           if (m) { llmConfig.model = m.value.trim() || 'grok-4.3'; }
           localStorage.setItem('horror_roki_llm', JSON.stringify(llmConfig));
-          alert('LLM config saved locally.');
+
+          const baseInput = document.getElementById('set-api-base');
+          if (baseInput) {
+            apiBase = baseInput.value.trim();
+            localStorage.setItem('brous_api_base', apiBase);
+          }
+          const baseNote = document.getElementById('current-base-note');
+          if (baseNote) {
+            const currentBase = apiBase || '(using relative /api - good for live pages.dev)';
+            baseNote.textContent = 'Current API base: ' + currentBase;
+          }
+          alert('Configs saved locally. Reload or re-try your action if needed.');
         };
         const db = document.getElementById('do-backup');
         if (db) db.onclick = downloadFullBackup;
@@ -2122,6 +2184,22 @@
       updateAllLibraryRenders();
       renderMoodChips();
       renderCuratorMessages();
+
+      // init top personal tabs (default to To Watch)
+      switchPersonalTab('towatch');
+
+      // Hide the beginner help note once password is set
+      const helpNote = document.getElementById('first-time-help');
+      if (helpNote && localStorage.getItem('brous_password')) {
+        helpNote.style.display = 'none';
+      }
+
+      // Show current apiBase in the help note for debugging
+      const baseNote = document.getElementById('current-base-note');
+      if (baseNote) {
+        const currentBase = apiBase || '(using relative /api - good for live pages.dev)';
+        baseNote.textContent = 'Current API base: ' + currentBase + '  |  After fixing secrets in Cloudflare, you MUST redeploy the Worker code (Save and Deploy) for the secret to become visible to the running code.';
+      }
       // Optional: auto-seed a small rec pool for "Recommended for you" on first boot (user can Refresh)
       if (!currentRecPool.length && watchedList.length > 0) {
         // fire and forget; non blocking
@@ -2130,7 +2208,7 @@
 
       // Helpful console note for first-time setup (password is required for the Worker)
       if (!localStorage.getItem('brous_password')) {
-        console.log('%c[Horror Roki] No API password set yet. Click the 🔐 Pass button or Settings. Needed for search, discover, recs, and The Curator.', 'color:#f59e0b');
+        console.log('%c[Horror Roki] No API password set yet. Click the 🔐 Pass button or ⚙︎ Settings. (On live site with routes, leave API Endpoint Base empty.)', 'color:#f59e0b');
       }
     }
 
@@ -2151,7 +2229,7 @@
           return;
         }
       }
-      apiPassword = prompt('Enter the shared Brous password:') || '';
+      apiPassword = prompt('Enter the shared password (matches your Worker PASSWORD secret):') || '';
       if (apiPassword) {
         localStorage.setItem('brous_password', apiPassword);
         const btn = document.getElementById('pass-btn');
@@ -2159,7 +2237,9 @@
           btn.textContent = '🔐 OK';
           btn.title = 'Password saved for this browser. Click to change or clear.';
         }
-        alert('Password saved for this browser. Try loading Discover or Search again.');
+        alert('Password saved for this browser. Try loading Discover, Refresh Pool, or Curator again.');
+        const helpNote = document.getElementById('first-time-help');
+        if (helpNote) helpNote.style.display = 'none';
       }
     }
 
